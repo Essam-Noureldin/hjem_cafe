@@ -464,6 +464,25 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
   before they are verified. Better to ship a generic-but-true
   description than a specific-but-wrong one."
 
+### 6.4 Menu items + prices are speculative
+- **Prompt says:** Step 16 Menu spec implies real menu data from the
+  client.
+- **What we did:** All 17 items and every price in `components/sections/Menu.tsx`
+  are educated guesses — Danish-bakery staples (sourdough, rugbrød,
+  cardamom buns, kanelsnegle, smørrebrød) plus IG-confirmed offerings
+  (matcha, kimchi). UK indie-café prices, Spring 2026 plausible range.
+  A small disclaimer at the bottom of the section reads "Prices
+  indicative. See in-store for current offering."
+- **Why:** Hjem hasn't engaged yet — there's no real menu to ship. The
+  alternative was to ship a near-empty menu or no Menu section, both of
+  which gut the demo. Plausible specifics + a hedge is the honest
+  middle ground.
+- **Prompt update:** Add to Step 16 — "If the Menu section ships before
+  the client has confirmed real items, include a one-line indicative-
+  prices disclaimer at the bottom of the section. Items live in a
+  single `MENU` const at the top of the component so a real-data swap
+  is one edit, not a refactor."
+
 ---
 
 ## How to maintain this file
