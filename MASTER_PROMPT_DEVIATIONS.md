@@ -483,6 +483,27 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
   single `MENU` const at the top of the component so a real-data swap
   is one edit, not a refactor."
 
+### 6.5 Story copy uses generic "we" framing, no invented founders
+- **Prompt says:** Step 16 Story spec implies real owner copy — names,
+  history, the personal narrative behind the bakery.
+- **What we did:** Three short paragraphs in first-person plural ("we",
+  "the bakers"). No founder names, no founding-date claim, no
+  invented biography. The Hjem-means-home reveal carries the brand;
+  the matcha/kimchi-alongside-cardamom-buns line establishes voice.
+- **Why:** Hjem's owners haven't engaged — there's no real biography
+  to ship. Inventing one is dishonest demo work and the bigger risk:
+  if a real founder signs and we've already built a fake history into
+  the demo, the rewrite is a copy-edit at best, an awkward
+  conversation at worst. Generic-but-grounded ("one room on Gloucester
+  Road, baking from before light") sets a believable tone without
+  fabricating personal facts.
+- **Prompt update:** Add to Step 16 — "If the Story section ships
+  before the client has provided real owner copy, default to
+  first-person plural with no names, no founding-date, no
+  family/origin claims. Anchor character in concrete operational
+  detail (opening hours, what's on the bench, what's gone by lunch)
+  rather than invented biography."
+
 ---
 
 ## How to maintain this file
