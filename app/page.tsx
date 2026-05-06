@@ -19,6 +19,7 @@
 
 import Hero from "@/components/sections/Hero";
 import Story from "@/components/sections/Story";
+import TodaysBench from "@/components/sections/TodaysBench";
 import Menu from "@/components/sections/Menu";
 
 /**
@@ -51,6 +52,7 @@ export default function Home() {
     <main>
       <Hero />
       <Story />
+      <TodaysBench />
       <Menu />
       <SectionStub id="visit" eyebrow="Visit" />
     </main>

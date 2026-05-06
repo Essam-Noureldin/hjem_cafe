@@ -1,42 +1,70 @@
 /**
- * WHAT: The Story section — the "who and why" band between Hero and
- *       Menu. Two-column on desktop (image left, prose right), stacks
- *       on mobile. Carries the Hjem name explanation and the brand
- *       voice in three short paragraphs.
- * WHY:  A one-page brochure earns trust on the Story section. Without
- *       it visitors see a logo, a hero, and a menu — they have no
- *       reason to believe the place has any character beyond what's
- *       on the shelves. Story is where the bakery answers "why am I
- *       here?" before it asks for a visit.
- * IF REMOVED: the homepage flows Hero → Menu → Visit with no narrative
- *             beat between hook and offering. Visitors who want to
- *             know what kind of bakery this is have nothing to read.
+ * WHAT: The Story section — moss-green band between Hero and Menu on
+ *       the BakeMyDay-inspired redesign branch. Two-column layout:
+ *       a 3-slide image carousel on the left (atmosphere / craft /
+ *       still-life), prose on the right.
+ * WHY:  The carousel adds a second pulse of movement on the page after
+ *       the Hero — visitors who skip the Hero rotation still see Story
+ *       cycling. It also lets the section show three angles of "what
+ *       the bakery actually feels like" (predawn cooling, hands at
+ *       work, tools on the bench) instead of one.
+ * IF REMOVED: the homepage flow loses its narrative beat and the
+ *             matcha/kimchi-alongside-Danish-staples brand voice has
+ *             nowhere to live.
  *
  * Visual decisions:
- *   - bg-moss / text-bone — gives the page a darker rhythm band
- *     between the cream Hero-overlay-content and the cream Menu. Plays
- *     against the moss Footer below to bookend the page in green.
- *   - 4:3 image, side-by-side with prose on lg+ — feels editorial,
- *     not full-bleed (Hero already owns full-bleed). On mobile the
- *     image stacks above the prose at the same aspect ratio.
- *   - max-w-5xl on the container — keeps the prose column from
- *     stretching too wide (typographic best practice: ~65 char line
- *     length).
+ *   - bg-moss / text-bone band — same as the static Story on `main`,
+ *     gives the page rhythm between Hero and Menu and bookends with
+ *     the moss Footer.
+ *   - 4:3 carousel slides — match the Story image aspect on `main` so
+ *     the layout is recognisable even with new content.
+ *   - Auto-rotation at 6.5s — slightly slower than Hero (5.5s) so
+ *     they don't visibly tick in unison.
  *
- * Copy: three short paragraphs. Generic-but-grounded "we" framing —
- * no invented founder names. Acknowledges the unusual matcha/kimchi
- * mix as a feature ("doesn't read like a Danish textbook"). See
- * Session 6 deviation 6.5 in MASTER_PROMPT_DEVIATIONS.md for why this
- * tone was chosen for a speculative demo.
- *
- * Image fallback: the wrapping div carries `bg-moss/40` so a missing
- * image doesn't leave a stark hole — the placeholder reads as a
- * deliberate dark block against the moss section bg.
+ * Image fallback: each slide div carries `bg-moss/40` so a missing
+ * file reads as a deliberate dark block against the section bg until
+ * the file lands.
  */
 
 import Image from "next/image";
+import Carousel from "@/components/Carousel";
+
+interface StorySlide {
+  image: string;
+  alt: string;
+}
+
+const STORY_SLIDES: ReadonlyArray<StorySlide> = [
+  {
+    image: "/images/story-1.jpeg",
+    alt: "Predawn light over a wire cooling rack of freshly-baked sourdough loaves at the back of a small Danish bakery, before opening.",
+  },
+  {
+    image: "/images/story-2.jpeg",
+    alt: "Close-up of a baker's hands shaping pale-cream sourdough on a lightly floured wooden bench, sleeves rolled.",
+  },
+  {
+    image: "/images/story-3.jpeg",
+    alt: "Still-life of a brass kitchen scale dusted with flour, a folded linen cloth, a wooden spoon, and a bowl of cardamom pods on honed marble.",
+  },
+];
 
 export default function Story() {
+  const slides = STORY_SLIDES.map((slide) => (
+    <div
+      key={slide.image}
+      className="relative aspect-[4/3] w-full overflow-hidden bg-moss/40"
+    >
+      <Image
+        src={slide.image}
+        alt={slide.alt}
+        fill
+        sizes="(min-width: 1024px) 36rem, 100vw"
+        className="object-cover"
+      />
+    </div>
+  ));
+
   return (
     <section
       id="story"
@@ -44,18 +72,15 @@ export default function Story() {
       className="bg-moss px-6 py-24 text-bone sm:py-32"
     >
       <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
-        {/* Image. aspect-[4/3] reserves space while the source loads;
-            bg-moss/40 fills the frame if the file is missing so the
-            section still reads as intentional. */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-moss/40">
-          <Image
-            src="/images/story.jpeg"
-            alt="Predawn light over a wire cooling rack of freshly-baked sourdough loaves at the back of a small Danish bakery, before opening."
-            fill
-            sizes="(min-width: 1024px) 36rem, 100vw"
-            className="object-cover"
-          />
-        </div>
+        <Carousel
+          ariaLabel="Hjem story imagery"
+          slides={slides}
+          autoplay
+          autoplayDelay={6500}
+          showDots
+          arrowsPosition="overlay"
+          controlsTheme="light"
+        />
 
         <div>
           <p className="font-body text-sm uppercase tracking-widest text-clay">
@@ -68,9 +93,6 @@ export default function Story() {
             Hjem means home.
           </h2>
 
-          {/* Three short paragraphs. text-bone/85 (slightly muted) for
-              body — keeps the h2 dominant and avoids the "all-white-on-
-              dark" wall-of-text feel. */}
           <div className="mt-6 space-y-4 font-body text-base leading-relaxed text-bone/85">
             <p>
               <em>Hjem</em> means <em>home</em> in Danish. We took the word

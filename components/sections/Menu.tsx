@@ -1,38 +1,35 @@
 /**
- * WHAT: The Menu section — what Hjem serves, broken into five category
- *       groups (Bakery, Pastries, Kitchen, Coffee, Tea & Matcha) with
- *       editorial two-column layout, a featured photograph per category,
- *       prices, and a one-line indicative-prices disclaimer.
- * WHY:  Hjem's pitch is "Danish bakery you can trust to make the
- *       cardamom bun properly." The menu is where that promise gets
- *       specific, and one photograph per category sells it harder than
- *       a text-only list — visitors decide on cardamom buns by *seeing*
- *       cardamom buns.
+ * WHAT: The Menu section — five category cards (Bakery, Pastries,
+ *       Kitchen, Coffee, Tea & Matcha) rendered as a horizontal
+ *       scrollable carousel. Each card holds the category's featured
+ *       photograph, name, item list with prices, and the indicative-
+ *       prices disclaimer sits beneath the carousel.
+ * WHY:  The BakeMyDay-inspired redesign leans into card carousels.
+ *       Replacing the static two-column editorial list with a
+ *       horizontal carousel keeps all the content density (every item,
+ *       every price, every description) while giving the section the
+ *       active, scrollable feel of a restaurant menu site.
  * IF REMOVED: the homepage's Visit CTA points at a place with no
- *             advertised offering — visitors would arrive cold.
+ *             advertised offering — visitors arrive cold.
  *
- * Data shape: MENU is a const array of categories, each carrying an
- * image path + alt + an items array. To swap real items in once Hjem
- * confirms them, edit MENU and nothing else — the JSX iterates blindly
- * so any data change here cascades automatically.
+ * Layout:
+ *   - bg-cream — light section, continues the lighter-band rhythm
+ *     between the moss Story above and (eventually) the Visit below.
+ *   - Track carousel with wide cards: ~90% mobile (one visible), ~60%
+ *     sm (one + peek), ~45% lg (two + peek). Wide enough to fit a 4:3
+ *     image + heading + ~4 items vertically without cramping.
+ *   - arrowsPosition="outside" + controlsTheme="dark" because cards
+ *     are bg-bone on bg-cream — overlay arrows would have weak
+ *     contrast.
+ *   - No autoplay — users browse menus at their own pace.
  *
- * Speculative content: every item, price, and the imagery prompts that
- * generated the photographs are educated guesses (Spring 2026 plausible).
- * The disclaimer at the bottom of the section names this hedge. See
- * Session 6 deviations 6.4 (prices) and 6.2 (AI imagery) in
- * MASTER_PROMPT_DEVIATIONS.md.
- *
- * Image fallback: each category column carries a `bg-cream` block under
- * the <Image>. If a `/images/menu/*.jpg` file is missing the layout
- * still reads as intentional rather than as a broken design.
- *
- * Accessibility: each category is an <h3> followed by an Image and a
- * <dl> of items. <dt> carries the name + price, <dd> carries the
- * description. Screen readers announce these as a definition list,
- * which is the correct shape for a menu.
+ * Speculative content: items + prices are educated guesses (Spring
+ * 2026 plausible UK indie-café). Disclaimer at the section foot
+ * names the hedge. See Session 6 deviation 6.4.
  */
 
 import Image from "next/image";
+import Carousel from "@/components/Carousel";
 
 interface MenuItem {
   name: string;
@@ -176,13 +173,52 @@ const MENU: ReadonlyArray<MenuCategory> = [
 ];
 
 export default function Menu() {
+  const slides = MENU.map((category) => (
+    <article
+      key={category.heading}
+      className="flex h-full flex-col overflow-hidden bg-bone shadow-sm"
+    >
+      <div className="relative aspect-[4/3] w-full bg-cream">
+        <Image
+          src={category.image}
+          alt={category.imageAlt}
+          fill
+          sizes="(min-width: 1024px) 30rem, (min-width: 640px) 60vw, 90vw"
+          className="object-cover"
+        />
+      </div>
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="font-display text-2xl text-ink sm:text-3xl">
+          {category.heading}
+        </h3>
+        <dl className="mt-5 space-y-4">
+          {category.items.map((item) => (
+            <div key={item.name}>
+              <dt className="flex items-baseline justify-between gap-3 font-body text-base text-ink">
+                <span className="font-medium">{item.name}</span>
+                <span
+                  aria-hidden="true"
+                  className="mb-1 flex-1 border-b border-dotted border-ink/20"
+                />
+                <span className="tabular-nums text-ink/80">{item.price}</span>
+              </dt>
+              <dd className="mt-1 font-body text-sm text-ink/60">
+                {item.description}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </article>
+  ));
+
   return (
     <section
       id="menu"
       aria-labelledby="menu-heading"
       className="bg-cream px-6 py-24 sm:py-32"
     >
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <p className="font-body text-sm uppercase tracking-widest text-clay">
           Menu
         </p>
@@ -197,60 +233,24 @@ export default function Menu() {
           Everything below is baked, fermented, or pulled here.
         </p>
 
-        {/* Two-column on lg+, single column on smaller screens. gap-y is
-            generous so each category reads as its own self-contained
-            block — image, heading, list — rather than a fragmented run
-            of items. */}
-        <div className="mt-16 grid gap-y-16 lg:grid-cols-2 lg:gap-x-16">
-          {MENU.map((category) => (
-            <div key={category.heading}>
-              {/* Featured photograph. aspect-[4/3] keeps the layout
-                  stable while images load. bg-cream beneath fills the
-                  frame if the source is missing. priority={false}
-                  (default) — these images are below the fold; LCP
-                  remains the Hero. */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-cream">
-                <Image
-                  src={category.image}
-                  alt={category.imageAlt}
-                  fill
-                  sizes="(min-width: 1024px) 36rem, 100vw"
-                  className="object-cover"
-                />
-              </div>
-
-              <h3 className="mt-6 font-display text-2xl text-ink sm:text-3xl">
-                {category.heading}
-              </h3>
-
-              <dl className="mt-6 space-y-5">
-                {category.items.map((item) => (
-                  <div key={item.name}>
-                    <dt className="flex items-baseline justify-between gap-4 font-body text-base text-ink">
-                      <span className="font-medium">{item.name}</span>
-                      {/* Dotted leader between name and price feels like
-                          a printed menu without leaning into the cliché.
-                          flex-grow border sits at the baseline of the
-                          surrounding text. */}
-                      <span
-                        aria-hidden="true"
-                        className="mb-1 flex-1 border-b border-dotted border-ink/20"
-                      />
-                      <span className="tabular-nums text-ink/80">
-                        {item.price}
-                      </span>
-                    </dt>
-                    <dd className="mt-1 font-body text-sm text-ink/60">
-                      {item.description}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          ))}
+        {/* Wider padding on the carousel container than on Today's
+            bench because Menu cards are taller (full item lists) — gives
+            the prev/next arrows space without touching the cards. */}
+        <div className="mt-12 px-2 sm:px-12">
+          <Carousel
+            ariaLabel="Hjem menu categories"
+            slides={slides}
+            slideClassName="min-w-0 flex-[0_0_90%] sm:flex-[0_0_60%] lg:flex-[0_0_45%]"
+            gapClassName="gap-5"
+            arrowsPosition="outside"
+            controlsTheme="dark"
+            showDots
+            autoplay={false}
+            loop
+          />
         </div>
 
-        <p className="mt-16 font-body text-xs uppercase tracking-widest text-ink/50">
+        <p className="mt-12 font-body text-xs uppercase tracking-widest text-ink/50">
           Prices indicative. See in-store for current offering.
         </p>
       </div>

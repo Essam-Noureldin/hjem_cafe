@@ -40,15 +40,25 @@ describe("Story", () => {
     expect(h2s).toHaveLength(1);
   });
 
-  it("renders at least one image with descriptive non-empty alt", () => {
+  it("renders the 3-image carousel, each image with descriptive alt", () => {
     render(<Story />);
     const images = screen.getAllByRole("img");
-    expect(images.length).toBeGreaterThanOrEqual(1);
+    expect(images).toHaveLength(3);
     for (const img of images) {
       const alt = img.getAttribute("alt") ?? "";
       // Sentence-ish description, not a placeholder word.
       expect(alt.length).toBeGreaterThan(15);
     }
+  });
+
+  it("renders carousel prev/next controls with accessible labels", () => {
+    render(<Story />);
+    expect(
+      screen.getByRole("button", { name: /previous slide/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /next slide/i }),
+    ).toBeInTheDocument();
   });
 
   it("references the load-bearing 'Danish' framing in body copy", () => {
