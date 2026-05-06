@@ -69,11 +69,11 @@ export const metadata: Metadata = {
     template: "%s · Hjem Kensington",
   },
   description:
-    "A small Danish neighbourhood bakery and specialty coffee shop with two doors in Kensington and South Kensington. Stone-milled sourdough, cardamom buns, slow coffee.",
+    "A small Danish neighbourhood bakery and specialty coffee shop on Gloucester Road, Kensington. Stone-milled sourdough, cardamom buns, slow coffee.",
   openGraph: {
     title: "Hjem Kensington — A Danish bakery in West London",
     description:
-      "Stone-milled sourdough, cardamom buns, slow coffee. Two doors in Kensington and South Kensington.",
+      "Stone-milled sourdough, cardamom buns, slow coffee. A small Danish bakery on Gloucester Road, Kensington.",
     url: siteUrl,
     siteName: "Hjem Kensington",
     locale: "en_GB",
