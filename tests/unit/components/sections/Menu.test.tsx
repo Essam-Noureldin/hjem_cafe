@@ -61,4 +61,19 @@ describe("Menu", () => {
     // "approximate") wouldn't carry the same hedge for a demo build.
     expect(screen.getByText(/indicative/i)).toBeInTheDocument();
   });
+
+  it("renders one image per category, each with a non-empty alt", () => {
+    render(<Menu />);
+    // Every category should carry a featured photo. Threshold of 3 keeps
+    // the test loose to copy/category-count edits while still catching
+    // "all images dropped from the menu" regressions. The image-per-
+    // category pattern is the visual anchor that distinguishes Hjem's
+    // menu from a plain text list.
+    const images = screen.getAllByRole("img");
+    expect(images.length).toBeGreaterThanOrEqual(3);
+    for (const img of images) {
+      const alt = img.getAttribute("alt") ?? "";
+      expect(alt.length).toBeGreaterThan(5);
+    }
+  });
 });

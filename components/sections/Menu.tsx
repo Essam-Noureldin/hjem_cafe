@@ -1,30 +1,38 @@
 /**
  * WHAT: The Menu section — what Hjem serves, broken into five category
  *       groups (Bakery, Pastries, Kitchen, Coffee, Tea & Matcha) with
- *       editorial two-column layout, prices, and a one-line indicative-
- *       prices disclaimer.
+ *       editorial two-column layout, a featured photograph per category,
+ *       prices, and a one-line indicative-prices disclaimer.
  * WHY:  Hjem's pitch is "Danish bakery you can trust to make the
  *       cardamom bun properly." The menu is where that promise gets
- *       specific. Editorial list (not card grid) keeps the tone close
- *       to a chalkboard menu, which is the right register for a small
- *       independent café.
+ *       specific, and one photograph per category sells it harder than
+ *       a text-only list — visitors decide on cardamom buns by *seeing*
+ *       cardamom buns.
  * IF REMOVED: the homepage's Visit CTA points at a place with no
  *             advertised offering — visitors would arrive cold.
  *
- * Data shape: MENU is a const array of categories. To swap real items
- * in once Hjem confirms them, edit MENU and nothing else — the JSX
- * iterates blindly so any shape change here cascades automatically.
+ * Data shape: MENU is a const array of categories, each carrying an
+ * image path + alt + an items array. To swap real items in once Hjem
+ * confirms them, edit MENU and nothing else — the JSX iterates blindly
+ * so any data change here cascades automatically.
  *
- * Speculative prices: every price below is a plausible UK indie-café
- * figure (Spring 2026), not Hjem's confirmed pricing. The disclaimer
- * at the bottom of the section names this hedge. See Session 6
- * deviation 6.4 in MASTER_PROMPT_DEVIATIONS.md.
+ * Speculative content: every item, price, and the imagery prompts that
+ * generated the photographs are educated guesses (Spring 2026 plausible).
+ * The disclaimer at the bottom of the section names this hedge. See
+ * Session 6 deviations 6.4 (prices) and 6.2 (AI imagery) in
+ * MASTER_PROMPT_DEVIATIONS.md.
  *
- * Accessibility: each category is an <h3> followed by a <dl> of
- * items. <dt> carries the name + price, <dd> carries the description.
- * Screen readers announce these as a definition list, which is the
- * correct shape for a menu.
+ * Image fallback: each category column carries a `bg-cream` block under
+ * the <Image>. If a `/images/menu/*.jpg` file is missing the layout
+ * still reads as intentional rather than as a broken design.
+ *
+ * Accessibility: each category is an <h3> followed by an Image and a
+ * <dl> of items. <dt> carries the name + price, <dd> carries the
+ * description. Screen readers announce these as a definition list,
+ * which is the correct shape for a menu.
  */
+
+import Image from "next/image";
 
 interface MenuItem {
   name: string;
@@ -34,12 +42,17 @@ interface MenuItem {
 
 interface MenuCategory {
   heading: string;
+  image: string;
+  imageAlt: string;
   items: MenuItem[];
 }
 
 const MENU: ReadonlyArray<MenuCategory> = [
   {
     heading: "Bakery",
+    image: "/images/menu/bakery.jpeg",
+    imageAlt:
+      "Three Danish loaves on a marble surface — sourdough, dark rye and spelt — dusted with flour.",
     items: [
       {
         name: "Stone-milled sourdough",
@@ -60,6 +73,9 @@ const MENU: ReadonlyArray<MenuCategory> = [
   },
   {
     heading: "Pastries",
+    image: "/images/menu/pastries.jpeg",
+    imageAlt:
+      "Cardamom buns dusted with pearl sugar, a cinnamon swirl and a poppyseed pastry on cream linen.",
     items: [
       {
         name: "Kardemommebolle",
@@ -85,6 +101,9 @@ const MENU: ReadonlyArray<MenuCategory> = [
   },
   {
     heading: "Kitchen",
+    image: "/images/menu/kitchen.jpeg",
+    imageAlt:
+      "Open-faced smørrebrød with cured fish and dill, a jar of house kimchi, and sourdough toast with cultured butter.",
     items: [
       {
         name: "Smørrebrød",
@@ -105,6 +124,9 @@ const MENU: ReadonlyArray<MenuCategory> = [
   },
   {
     heading: "Coffee",
+    image: "/images/menu/coffee.jpeg",
+    imageAlt:
+      "A flat white with a delicate latte-art rosette on a small ceramic saucer, espresso machine soft-focused behind.",
     items: [
       {
         name: "Espresso",
@@ -130,6 +152,9 @@ const MENU: ReadonlyArray<MenuCategory> = [
   },
   {
     heading: "Tea & Matcha",
+    image: "/images/menu/matcha.jpeg",
+    imageAlt:
+      "Bright-green ceremonial matcha in a dark ceramic chawan, bamboo whisk resting beside it on cream linen.",
     items: [
       {
         name: "Ceremonial matcha",
@@ -172,23 +197,40 @@ export default function Menu() {
           Everything below is baked, fermented, or pulled here.
         </p>
 
-        {/* Two-column on lg+, single column on smaller screens. gap-x is
-            wider than gap-y so the columns feel like two distinct lists,
-            not a fragmented single list. */}
-        <div className="mt-16 grid gap-y-12 lg:grid-cols-2 lg:gap-x-16">
+        {/* Two-column on lg+, single column on smaller screens. gap-y is
+            generous so each category reads as its own self-contained
+            block — image, heading, list — rather than a fragmented run
+            of items. */}
+        <div className="mt-16 grid gap-y-16 lg:grid-cols-2 lg:gap-x-16">
           {MENU.map((category) => (
             <div key={category.heading}>
-              <h3 className="font-display text-2xl text-ink sm:text-3xl">
+              {/* Featured photograph. aspect-[4/3] keeps the layout
+                  stable while images load. bg-cream beneath fills the
+                  frame if the source is missing. priority={false}
+                  (default) — these images are below the fold; LCP
+                  remains the Hero. */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-cream">
+                <Image
+                  src={category.image}
+                  alt={category.imageAlt}
+                  fill
+                  sizes="(min-width: 1024px) 36rem, 100vw"
+                  className="object-cover"
+                />
+              </div>
+
+              <h3 className="mt-6 font-display text-2xl text-ink sm:text-3xl">
                 {category.heading}
               </h3>
+
               <dl className="mt-6 space-y-5">
                 {category.items.map((item) => (
                   <div key={item.name}>
                     <dt className="flex items-baseline justify-between gap-4 font-body text-base text-ink">
                       <span className="font-medium">{item.name}</span>
-                      {/* Dotted leader between name and price feels like a
-                          printed menu without leaning into the cliché. The
-                          flex-grow border-b sits at the baseline of the
+                      {/* Dotted leader between name and price feels like
+                          a printed menu without leaning into the cliché.
+                          flex-grow border sits at the baseline of the
                           surrounding text. */}
                       <span
                         aria-hidden="true"
