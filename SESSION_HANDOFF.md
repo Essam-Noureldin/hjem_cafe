@@ -1,162 +1,135 @@
 # Session Handoff
-**Generated:** 2026-05-04
+**Generated:** 2026-05-04 (end of Session 2)
 **Project:** Hjem Kensington — speculative demo build (UK indie cafe)
 **Operator:** Essam (solo freelancer)
 
 ---
 
-## What Was Completed This Session
+## What Was Completed in Session 2
 
-### Project bootstrap
-- `hjem-kensington/` — Next.js 16.2.4 + React 19.2.4 + Tailwind v4 + ESLint v9 + Turbopack scaffolded via `create-next-app`
-- `npm install` complete (~440 packages)
+### Phase 1 — `/lib/sanitize.ts` (Step 6)
+- `tests/unit/lib/sanitize.test.ts` — 16 tests covering tag stripping (script/p/br/a, attributes, case-insensitivity, nested), preservation (plain text, math like `temp < 0 or > 30`, HTML entities like `&lt;`), nullish handling, 1MB stress test
+- `lib/sanitize.ts` — regex `/<\/?[a-zA-Z][^>]*>/g` (requires letter/`/` after `<` to distinguish real tags from math comparisons). Returns empty string for null/undefined.
 
-### Config files
-- `.env.example` — every env var documented with comments, Resend stubbed
-- `.env.local` — dev values (esam.noureldin@gmail.com as form recipient, Resend left blank for stub mode)
-- `.gitignore` — extended (IDE files, OS junk, test/Sentry artifacts)
-- `.nvmrc` — pins Node 20
-- `package.json` — added `engines: { node: ">=20.0.0" }`, all test scripts (`test`, `test:watch`, `test:ci`, `test:unit`, `test:integration`), `prepare: "husky"`, lint-staged config
-- `tsconfig.json` — left as Next default (`@/*` alias maps to root works for our `@/lib/*`, `@/components/*` etc.)
+### Phase 2 — `/lib/rate-limit.ts` (Step 7)
+- `tests/unit/lib/rate-limit.test.ts` — 10 tests using Jest fake timers. Covers: under-limit, exact-limit, limit+1 blocking, retryAfterMs calculation, full-window expiry, partial sliding-window refill, multi-identifier independence, max=0 edge case, same-tick burst
+- `lib/rate-limit.ts` — in-memory `Map<string, number[]>`. Sliding window via timestamp filtering. Pure function (caller passes pre-hashed identifier, library has no IP/header concerns).
+- Exported `_resetRateLimitForTests()` test helper to clear the Map between tests.
 
-### Brand styling
-- `app/globals.css` — Tailwind v4 `@theme` block with the 5 Hjem brand tokens (cream, moss, ink, clay, bone) + display/body font tokens; `prefers-reduced-motion` honoured globally
-- `app/layout.tsx` — Fraunces (display) + DM Sans (body) loaded via `next/font/google`; `lang="en-GB"`; default Open Graph metadata; dark mode removed
+### Phase 3 — `/lib/honeypot.ts` (Step 8)
+- `tests/unit/lib/honeypot.test.ts` — 8 tests. Master-prompt-mandated single-space-as-bot behavior verified.
+- `lib/honeypot.ts` — `isBot(value)`: returns `true` for any non-empty string, `false` for `null`/`undefined`/`""`. No trimming (master prompt rule).
 
-### Docker
-- `Dockerfile` — 3-stage (deps / builder / runner), non-root `nextjs:1001` user, expects `output: "standalone"`
-- `.dockerignore` — excludes `.env*`, `node_modules`, `.next`, `tests/`, etc.
-- `docker-compose.yml` — dev mode, named volumes for Windows compatibility, Redis service commented out
-- `docker-compose.prod.yml` — production preview using the multi-stage runner
-
-### Test infrastructure
-- 10 new dev deps installed: jest 30.3, jest-environment-jsdom, RTL 16.3, jest-dom, user-event, @types/jest, msw 2.14, @axe-core/react 4.11, husky 9.1, lint-staged 16.4
-- `jest.config.ts` — `next/jest` wrapper, jsdom default, 80% coverage gate, `modulePathIgnorePatterns` excludes `.next/`
-- `jest.setup.ts` — registers jest-dom matchers, mocks `matchMedia` (Framer Motion + axe trap defused), `IntersectionObserver`, `ResizeObserver`
-- `tests/__mocks__/handlers.ts` — MSW stub
-- `.husky/pre-commit` — `tsc --noEmit` + `lint-staged`
-- `.husky/pre-push` — `jest --ci --passWithNoTests --detectOpenHandles`
-
-### Security
-- `next.config.ts` — `output: "standalone"` + strict CSP (no third-party font hosts since next/font handles fonts locally) + HSTS + X-Frame-Options + Permissions-Policy + X-Content-Type-Options + Referrer-Policy
-- Conditional `'unsafe-eval'` only in dev (Turbopack HMR)
-
-### First TDD utility
-- `tests/unit/lib/env.test.ts` — 18 tests covering required-var enforcement, empty-string handling, type parsing (number/boolean), optional vars
-- `lib/env.ts` — typed env validator with `validate()` testable function and `env` singleton; NODE_ENV='test' guard so tests don't trip the singleton's validation
-
-### Lint / coverage adjustments
-- `eslint.config.mjs` — added `coverage/**`, `.jest-cache/**`, `.husky/_/**` to global ignores
+### Phase 4 — `next-sitemap` config (Step 9)
+- Installed `next-sitemap@^4.2.3` as a runtime dep (peer dep `next: '*'` accepts Next 16)
+- `next-sitemap.config.js` — siteUrl from `NEXT_PUBLIC_SITE_URL` with localhost fallback. `generateRobotsTxt: true`. Exclude `/api/*`. `transform()` assigns priority 1.0 to `/`, 0.5 to legal pages, 0.8 to others.
+- `package.json` — added `"postbuild": "next-sitemap"` so it runs automatically after every `next build`
+- `.gitignore` — added `public/sitemap*.xml` and `public/robots.txt` (build artifacts, regenerated by Vercel on every deploy)
 
 ---
 
 ## Current Build Step
 
-**We are on step 5 of 22 in the master prompt's build order, COMPLETED.**
+**Steps 1-9 of 22 in the master prompt's build order are COMPLETE.**
 
-**Next step (Session 2):** Step 6 — `/lib/sanitize.ts` (test-first).
-- Write `tests/unit/lib/sanitize.test.ts` first per master prompt spec:
-  - Strips `<script>` tags
-  - Strips HTML tags from all field types
-  - Preserves normal text, numbers, punctuation
-  - Handles empty strings, null, undefined without throwing
-  - Handles extremely long strings without hanging
-- Confirm RED, then implement, confirm GREEN.
+**Next step (Session 3):** Step 10 — Legal pages (test-first).
+- Write `tests/integration/flows/legal-pages.test.ts` first per master prompt:
+  - `/privacy-policy` returns 200
+  - `/terms-and-conditions` returns 200
+  - `/cookie-policy` returns 200
+  - Each page has unique `<title>`
+  - Each page has meta description
+  - Each page contains the business name ("Hjem Kensington")
+- Implement the three legal pages with realistic UK-jurisdiction content (GDPR for Privacy Policy).
+- After Step 10: Steps 11-15 are GA + CookieConsent + Navbar + Footer (all test-first), then 16-22 are pages, contact form, Sentry, smoke tests, docs.
 
-After that: rate-limit.ts (step 7), honeypot.ts (step 8), then non-test config (sitemap, etc.)
+> 💡 **Strongly recommended:** run `/compact` at the start of Session 3, before Step 10. All `/lib` utilities are now done — context can be compressed without losing anything load-bearing. The actual files (with all annotations) are on disk and re-readable; only the build narrative needs compressing.
 
 ---
 
-## Decisions Made This Session
+## Decisions Made in Session 2
 
 | Decision | Reasoning | Alternatives rejected |
 |---|---|---|
-| Project folder name `hjem-kensington` | Descriptive, scales when many client folders sit side-by-side | `hjem` (too short, ambiguous) |
-| Form recipient: `esam.noureldin@gmail.com` | Essam picked this dedicated address | Personal `onoureldin@gmail.com` (gets noisy with demo submissions) |
-| Resend stubbed for demo | Free-tier verification needs DNS access — speculative builds don't justify it; wire when revenue exists | Wiring Resend now (premature) |
-| Use Docker (option A) | Essam overrode my recommendation to skip — wants Docker workflow from day 1 | Skip Docker (my recommendation) |
-| `https://hjem-kensington.vercel.app` as site URL | Accurate to where preview deploys live | Real `hjemkensington.com` (we don't own it) |
-| Tailwind v4 CSS-first config (no `tailwind.config.ts`) | Came with Next 16 default; principle of named tokens still satisfied via `@theme` block | Downgrade to Tailwind v3 (creating debt against current standard) |
-| `next/font/google` over `<link>` font loading | Fonts served from own domain → tighter CSP (no fonts.googleapis.com or fonts.gstatic.com whitelist), faster | Master prompt's CSP whitelist (assumed `<link>` loading) |
-| `'unsafe-eval'` only in dev | Production stays strict; only Turbopack HMR needs it in dev | Always allow (security regression) |
-| Use `Number()` not `parseInt()` in env.ts | parseInt("3xyz") silently returns 3 — silent data corruption | parseInt (looser, accepts garbage) |
-| Skip ts-jest in favour of `next/jest` | Modern Next ships SWC-based Jest helper; faster, fewer config mismatches | ts-jest (master prompt's recommendation, but pre-Next 12) |
-| Brand tokens: cream `#EFE8DC`, moss `#2F3E33`, ink `#1F1A14`, clay `#B58A78`, bone `#F0E8DA` | Derived from Lovable design exploration; align with screenshots Essam approved | — |
-| Brand fonts: Fraunces (display) + DM Sans (body) | Closest free Google Fonts match for the Lovable editorial serif + clean humanist sans pairing | Inter as body (less character against Fraunces) |
+| Sanitize: roll-our-own regex `/<\/?[a-zA-Z][^>]*>/g` | Zero deps; smarter than naive `<.*>` (handles `temp < 0 or > 30` correctly); we want zero HTML, not allowlisted HTML | `sanitize-html` library (~30KB, designed for allowlisting which is the wrong shape) |
+| Rate-limit: caller passes pre-hashed identifier | Pure function, easier to test, reusable for non-IP identifiers later (user ID once auth exists) | Library reads/hashes IP itself (couples to Next `headers()` helper, harder to test) |
+| Rate-limit: in-memory `Map`, no Redis | Low-traffic local site — Redis is unnecessary infra | Upstash Redis (master prompt's "if available" — not needed) |
+| Sitemap: explicit `/api/*` exclusion + matching robots disallow | Defence-in-depth — even before any API route exists, the rule prevents future leaks | Add later when API routes exist (forgettable) |
+| Sitemap files (`public/sitemap*.xml`, `public/robots.txt`) gitignored | Vercel regenerates them on every deploy; committing creates timestamp-only diffs | Commit them (git noise, no benefit) |
+| `next-sitemap` as runtime dep, not dev dep | Runs at build time on Vercel — needs to be in `dependencies`, not `devDependencies` | `--save-dev` (would break Vercel's production install) |
 
 ---
 
 ## Known Issues or Open Questions
 
-### Resolved during session
-- ✅ Jest config typo: `setupFilesAfterEach` → `setupFilesAfterEnv` (TS caught it; corrected)
-- ✅ JSDoc comment broken by embedded `*/` literal in jest.config.ts (rewrote without `*/`)
-- ✅ Haste-map collision warning: `.next/standalone/package.json` vs root `package.json` (added `modulePathIgnorePatterns`)
-- ✅ TS errors: test objects didn't have `NODE_ENV` for `NodeJS.ProcessEnv` (changed validate signature to permissive `Record<string, string | undefined>`)
-- ✅ Regex `/s` flag needed ES2018+ (removed; error message is single-line anyway)
-- ✅ ESLint scanning generated `coverage/` files (added to global ignores)
+### Resolved during Session 2
+- ✅ `next-sitemap` peer dep verified compatible with Next 16 (`next: '*'`)
+- ✅ Sliding-window edge case where 4 hits in same millisecond pass through (third-then-block discipline confirmed via test)
+- ✅ Sitemap config name extension — `.js` works as CommonJS because `package.json` has no `"type": "module"`
 
-### Open / deferred
-- **Docker not yet tested running.** Files are written but Essam needs to install Docker Desktop and run `docker compose up` to verify the dev container actually boots.
-- **No CLAUDE.md or ERRORS.md yet.** Master prompt schedules the 15-doc generation for Step 21. Decisions logged here for now.
-- **No commit yet.** Project not committed to git. Worth doing before Session 2 — protects the foundation.
-- **Hjem owners' actual identity, real menu, real founder names — unknown.** Will need either research or stay generic (no fictional Søren & Mette signature) when building the Story section in Step 16.
-- **No `journal/` or `wholesale/` page** yet — Lovable design referenced these. Decide whether to cut from footer or build them in Step 16.
+### Carried over from Session 1 / still open
+- **Docker not yet tested running.** Files exist; Essam still needs Docker Desktop + first `docker compose up`.
+- **2 moderate-severity vulnerabilities** in Next.js's bundled `postcss` dep (`GHSA-qx2v-qp2m-jg93` — XSS via unescaped `</style>` in CSS stringify). Not actionable: `npm audit fix --force` would downgrade Next to 9.3.3. Master prompt gate is high+ only — moderates are tolerated. **Should be added to ERRORS.md when it's generated in Step 21.**
+- **No CLAUDE.md or ERRORS.md yet** — generation scheduled for Step 21.
+- **Hjem owners' actual identity, real menu** — still unknown. Avoid fictional founder names in Step 16's Story section.
+- **`journal/` and `wholesale/` footer links** — Lovable design referenced these. Decide cut vs build at Step 16.
+- **Boilerplate `app/page.tsx`** — still default Next welcome page. Replaced in Step 16.
 
 ---
 
 ## Test Status
 
-- **18 tests passing** (`tests/unit/lib/env.test.ts`)
-- 0 failing
-- 0 skipped
-- Coverage: 94.73% statements, 84.61% branches, 100% functions, 94.44% lines (passes all 80% gates)
+- **52 tests passing** across 4 suites
+  - env.test.ts: 18
+  - sanitize.test.ts: 16
+  - rate-limit.test.ts: 10
+  - honeypot.test.ts: 8
+- Coverage: 97.87% statements, 91.3% branches, 100% functions, 97.61% lines
+  - sanitize.ts, rate-limit.ts, honeypot.ts: **100% on every metric**
+  - env.ts: 94.73% statements (one uncovered branch: NODE_ENV='test' singleton path, intentional)
 - Last full suite run: **PASSED**
+- Last `next build`: **PASSED** (with postbuild generating sitemap + robots)
 
-### Tests still to write (per master prompt order)
-1. `tests/unit/lib/sanitize.test.ts` (Session 2 next)
-2. `tests/unit/lib/rate-limit.test.ts`
-3. `tests/unit/lib/honeypot.test.ts`
-4. `tests/integration/flows/legal-pages.test.ts`
-5. `tests/unit/components/CookieConsent.test.tsx`
-6. `tests/unit/components/Navbar.test.tsx`
-7. `tests/unit/components/Footer.test.tsx`
-8. `tests/unit/components/ContactForm.test.tsx`
-9. `tests/integration/api/contact-form.test.ts`
-10. `tests/integration/api/security-headers.test.ts` (Node env, supertest)
-11. `tests/integration/flows/cookie-consent-ga.test.ts`
-12. `tests/smoke/render.test.tsx`
-13. `tests/smoke/navigation.test.tsx`
-14. `tests/smoke/accessibility.test.tsx` (axe-core)
+### Tests still to write (next sessions, in build order)
+1. `tests/integration/flows/legal-pages.test.ts` (Session 3 next, Step 10)
+2. `tests/integration/flows/cookie-consent-ga.test.ts` (Steps 11-13)
+3. `tests/unit/components/CookieConsent.test.tsx` (Step 12)
+4. `tests/unit/components/Navbar.test.tsx` (Step 14)
+5. `tests/unit/components/Footer.test.tsx` (Step 15)
+6. `tests/unit/components/ContactForm.test.tsx` (Step 17)
+7. `tests/integration/api/contact-form.test.ts` (Step 17)
+8. `tests/integration/api/security-headers.test.ts` (Step 19)
+9. `tests/smoke/render.test.tsx` (Step 20)
+10. `tests/smoke/navigation.test.tsx` (Step 20)
+11. `tests/smoke/accessibility.test.tsx` (Step 20)
 
 ---
 
 ## How to Resume
 
-1. Open Claude Code in `c:\Users\noure\Desktop\apps_websites\websites\hjem-kensington\` (or its parent directory).
-2. Paste the **MASTER_PROMPT.md** at the start of the session (mandatory — defines the workflow).
-3. Paste **this SESSION_HANDOFF.md** so Claude has full context.
-4. State: *"Resuming Hjem Kensington build from step 6 — `/lib/sanitize.ts` test-first."*
-5. Claude should confirm understanding and present a Session 2 plan before writing any code.
+1. Open Claude Code in `c:\Users\noure\Desktop\apps_websites\websites\` (the parent — `git -C hjem-kensington` works for git commands).
+2. Paste the **MASTER_PROMPT.md** at session start.
+3. Paste **this SESSION_HANDOFF.md**.
+4. State: *"Resuming Hjem Kensington build from step 10 — legal pages test-first."*
+5. Claude should run the four health-check commands, confirm clean state, then present a Session 3 plan before writing code.
 
 ---
 
 ## Files Needing Attention
 
-- `app/page.tsx` — still the Next.js boilerplate welcome page. Visually broken under Hjem brand tokens (uses `bg-zinc-50`, `dark:` classes that don't apply, `font-sans` not mapped). Will be fully replaced in Step 16 when we build the Hjem hero. **Not a blocker for current dev — but `npm run dev` will look ugly until Step 16.**
-- `CLAUDE.md` (root) — currently just `@AGENTS.md`. The Next-shipped warning still applies. The full project CLAUDE.md gets generated in Step 21.
-- `AGENTS.md` (root) — Next 16's warning that APIs may differ from older training data. **Keep this — verify Next-specific patterns against current docs as we hit them, especially for: server actions, the `headers()` API, and `withSentryConfig` integration when we add Sentry in Step 18.**
+- `app/page.tsx` — still Next.js boilerplate. Replaced in Step 16.
+- `CLAUDE.md` (root) — still just `@AGENTS.md` import. Full project CLAUDE.md generated in Step 21.
 
 ---
 
-## Quick health-check commands (for the next session to run on resume)
+## Quick health-check commands (run on resume)
 
 ```powershell
-# Confirm we can still build
+# From the project folder (cd hjem-kensington first if needed):
 npx tsc --noEmit
 npx eslint . --max-warnings 0
 npx jest --ci --passWithNoTests
-npx next build
+npx next build       # also runs postbuild (next-sitemap)
 ```
 
-All four should exit clean. If any errors, something has changed since this handoff was written — investigate before resuming.
+All four should exit clean. The build step now generates `public/sitemap.xml` + `public/robots.txt` as a side effect — those files appear in the working tree but are gitignored.
