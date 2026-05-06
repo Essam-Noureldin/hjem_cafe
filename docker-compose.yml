@@ -1,0 +1,98 @@
+# =============================================================================
+# docker-compose.yml — Local development environment for Hjem Kensington
+# =============================================================================
+# WHAT: Defines the dev environment as one container running `next dev`,
+#       with the project source mounted from the host so edits hot-reload
+#       in the container.
+#
+# USAGE:
+#   docker compose up           — start dev server at http://localhost:3000
+#   docker compose up -d        — start in background
+#   docker compose down         — stop and remove the container
+#   docker compose logs -f app  — tail the dev server output
+#
+# NOT FOR PRODUCTION: this Compose file is dev-only. For a production-like
+# preview, use docker-compose.prod.yml.
+# =============================================================================
+
+services:
+  app:
+    # WHAT: builds the image from the local Dockerfile, but stops at the
+    #       deps stage — we don't need the full multi-stage build for dev,
+    #       since dev uses `next dev` not the standalone server.
+    build:
+      context: .
+      target: deps
+
+    # Allow overriding the user inside the container if file-permission
+    # issues arise on Linux hosts. On Windows + WSL2 this is usually fine.
+    # user: "${UID:-1000}:${GID:-1000}"
+
+    # Same image gets the same name regardless of folder name.
+    image: hjem-kensington-dev
+
+    # Run the Next.js dev server with Turbopack (already configured in
+    # package.json scripts). --hostname 0.0.0.0 makes it accessible from
+    # the host machine, not just from inside the container.
+    command: npx next dev --hostname 0.0.0.0 --port 3000
+
+    # Map container port 3000 to host port 3000.
+    ports:
+      - "3000:3000"
+
+    # Mount the project source from the host into /app. Edits on the host
+    # are visible inside the container instantly → hot reload works.
+    #
+    # The `node_modules` named volume below "covers" the mounted folder so
+    # the host's node_modules (likely Windows-compiled) doesn't shadow the
+    # container's Linux-compiled node_modules. This is the standard fix
+    # for the "binding works on macOS but breaks on Windows" Docker issue.
+    volumes:
+      - .:/app
+      - hjem_node_modules:/app/node_modules
+      - hjem_next_cache:/app/.next
+
+    # Load env vars from .env.local at runtime. .env.local is on the host,
+    # outside the image — secrets never bake into the image itself.
+    env_file:
+      - .env.local
+
+    # Restart only on actual failure, not when stopped intentionally.
+    restart: unless-stopped
+
+    # Quick health check — Compose marks the service unhealthy if /
+    # stops responding. Useful for `docker compose ps` visibility.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+
+  # ----- Redis (commented out) -----
+  # Uncomment if/when rate limiting moves from in-memory to Redis. Master
+  # prompt's recommendation: stay in-memory for low-traffic local sites.
+  #
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - hjem_redis_data:/data
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+
+
+volumes:
+  # Named volumes — managed by Docker, isolated from the host filesystem.
+  # Why named volumes for node_modules and .next/cache: avoids host/container
+  # arch mismatch on Windows hosts and makes them survive `docker compose down`
+  # so the next `up` doesn't have to reinstall everything.
+  hjem_node_modules:
+  hjem_next_cache:
+  # hjem_redis_data:

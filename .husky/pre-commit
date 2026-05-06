@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+
+# =============================================================================
+# Pre-commit hook
+# =============================================================================
+# Runs automatically before `git commit` finalises. If any step exits with a
+# non-zero status, the commit is aborted and nothing is committed.
+#
+# What it does:
+#   1. tsc --noEmit on the WHOLE PROJECT — TypeScript needs full project
+#      context to type-check correctly. Running it on staged files only
+#      gives false errors and misses real cross-file issues.
+#   2. lint-staged — runs `eslint --fix` on staged .ts/.tsx files only.
+#      Fast (only touches what you changed) and auto-fixes safe issues.
+#
+# What it does NOT do:
+#   Run jest. The full test suite runs on `git push` instead — committing
+#   small WIP changes shouldn't have to wait for the test runner each time.
+# =============================================================================
+
+echo "Type-checking the project..."
+npx tsc --noEmit || exit 1
+
+echo "Linting staged files..."
+npx lint-staged || exit 1
+
+echo "Pre-commit checks passed."

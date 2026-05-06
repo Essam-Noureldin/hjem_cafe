@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Project additions:
+    "coverage/**",        // Jest's HTML coverage report (auto-generated)
+    ".jest-cache/**",     // Jest's transform cache
+    ".husky/_/**",        // Husky's internal helper scripts
   ]),
 ]);
 

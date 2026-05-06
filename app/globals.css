@@ -1,26 +1,115 @@
+/* ============================================================================
+ * globals.css — Hjem Kensington brand tokens & base styles
+ * ============================================================================
+ * WHAT: The single source of truth for Hjem's design system. Defines colours,
+ *       typography, and the body defaults that every page inherits.
+ *
+ * WHY:  Tailwind v4 uses CSS-first config — design tokens live here instead
+ *       of in a tailwind.config.ts file. Naming a token `--color-cream` makes
+ *       `bg-cream`, `text-cream`, etc. usable as utility classes everywhere.
+ *
+ * IF REMOVED: every component would render in browser default styles
+ *             (Times New Roman on white) — the brand identity disappears.
+ *
+ * COMMON MISTAKE: writing arbitrary hex values inline like `bg-[#efe8dc]`
+ *                 instead of using `bg-cream`. The named-token rule is what
+ *                 keeps the design coherent — change a value here and the
+ *                 whole site updates. Bypassing it = future drift.
+ * ========================================================================= */
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+/* ----------------------------------------------------------------------------
+ * Brand tokens
+ * --------------------------------------------------------------------------
+ * The 5 Hjem colours, derived from the Lovable design exploration. Every
+ * other shade in the app should be a transparency layer over one of these.
+ *
+ * Naming convention:
+ *   cream → primary light background (warm off-white, never #ffffff)
+ *   moss  → deep forest green for contrast bands and footer
+ *   ink   → near-black brown for body text on cream
+ *   clay  → muted terracotta — accent only, never primary
+ *   bone  → off-white for type on dark backgrounds (softer than #ffffff)
+ *
+ * Tokens prefixed `--color-` automatically generate `bg-*`, `text-*`,
+ * `border-*`, and `ring-*` utilities in Tailwind v4.
+ * ------------------------------------------------------------------------- */
+
+@theme {
+  /* Brand colours */
+  --color-cream: #efe8dc;
+  --color-moss:  #2f3e33;
+  --color-ink:   #1f1a14;
+  --color-clay:  #b58a78;
+  --color-bone:  #f0e8da;
+
+  /* Fonts — actual font-family values are loaded by next/font/google in
+   * app/layout.tsx, which sets the CSS variables --font-display and
+   * --font-body on the <html> element. The lines below register those
+   * variables as Tailwind tokens, so `font-display` and `font-body`
+   * become valid utility classes. */
+  --font-display: var(--font-display-loaded), Georgia, "Times New Roman", serif;
+  --font-body:    var(--font-body-loaded), system-ui, -apple-system, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ----------------------------------------------------------------------------
+ * Body defaults
+ * --------------------------------------------------------------------------
+ * WHAT: Every page in the app inherits these as the baseline.
+ * WHY:  Setting them once here means components never have to repeat
+ *       `className="bg-cream text-ink font-body"` on every wrapper div.
+ * IF REMOVED: pages would render with browser-default white background
+ *             and serif font, breaking the brand on first paint.
+ * COMMON MISTAKE: putting these on <html> instead of <body>. Some browsers
+ *                 don't apply background colour to <html> reliably across
+ *                 the whole viewport — <body> is the safe choice.
+ * ------------------------------------------------------------------------- */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ----------------------------------------------------------------------------
+ * Selection colour
+ * --------------------------------------------------------------------------
+ * Subtle on-brand highlight when a user selects text. Default browser
+ * blue would clash with the warm palette. Clay-on-cream feels intentional.
+ * ------------------------------------------------------------------------- */
+
+::selection {
+  background-color: var(--color-clay);
+  color: var(--color-bone);
+}
+
+
+/* ----------------------------------------------------------------------------
+ * Reduced motion respect
+ * --------------------------------------------------------------------------
+ * WHAT: When a visitor has set "Reduce motion" in their OS, all our
+ *       animations and transitions become near-instant.
+ * WHY:  Accessibility — motion can trigger nausea, vertigo, or seizures
+ *       for users with vestibular disorders. WCAG 2.1 requires honouring
+ *       prefers-reduced-motion.
+ * BONUS: this setting also fixes a Framer Motion + axe-core test issue —
+ *        invisible (mid-animation) elements get flagged as low-contrast
+ *        in accessibility tests. Disabling motion in test runs avoids it.
+ * ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

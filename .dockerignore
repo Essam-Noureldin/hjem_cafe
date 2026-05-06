@@ -1,0 +1,64 @@
+# =============================================================================
+# .dockerignore — what NOT to copy into the Docker build context
+# =============================================================================
+# WHAT: Tells `docker build` to skip these files when assembling the image.
+# WHY:  (1) Speed — smaller context = faster `COPY .` instructions.
+#       (2) Security — `.env*` files contain secrets and must never end up
+#           inside the image (which gets pushed to a registry).
+#       (3) Correctness — host node_modules are wrong arch (likely Win/Mac);
+#           image installs fresh Linux modules.
+#
+# IMPORTANT: this file affects `docker build` only. It does NOT affect what
+# docker-compose mounts via `volumes:` — Compose reads .env.local at runtime
+# from the host. Both rules co-exist.
+# =============================================================================
+
+# dependencies (reinstalled inside container)
+node_modules
+.pnp
+.pnp.js
+
+# build output (rebuilt inside container)
+.next
+out
+build
+
+# git history
+.git
+.gitignore
+
+# tests / coverage (not needed in image)
+coverage
+.jest-cache
+tests
+**/*.test.ts
+**/*.test.tsx
+
+# env files (secrets — must NEVER ship in the image)
+.env*
+!.env.example
+
+# local docker overrides
+docker-compose.override.yml
+
+# IDE / OS junk
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# docs (don't bloat the image)
+docs
+README.md
+*.md
+
+# Sentry config (auth token must not ship)
+sentry.properties

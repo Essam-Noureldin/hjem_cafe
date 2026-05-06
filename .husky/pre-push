@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+
+# =============================================================================
+# Pre-push hook
+# =============================================================================
+# Runs automatically before `git push` actually contacts the remote. Aborts
+# the push if any check fails — so broken code never reaches GitHub or
+# triggers a Vercel deploy.
+#
+# Full test suite — every unit test, integration test, smoke test. Slower
+# than pre-commit (~30-60s typically) but you push less often than you
+# commit, and the safety is worth it.
+#
+# `--passWithNoTests` exits 0 if no tests exist yet (early in the project).
+# As soon as the first real test exists, this stops being a no-op.
+# `--detectOpenHandles` warns about leaking handles (timers, sockets) that
+# would prevent CI from terminating cleanly.
+# =============================================================================
+
+echo "Running full test suite before push..."
+npx jest --ci --passWithNoTests --detectOpenHandles || exit 1
+
+echo "Pre-push checks passed."
