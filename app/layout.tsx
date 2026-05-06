@@ -15,6 +15,8 @@ import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
 import CookieConsent from "@/components/CookieConsent";
 import GAScript from "@/components/analytics/GAScript";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 /**
@@ -110,7 +112,13 @@ export default function RootLayout({
       className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <Navbar />
+        {/* flex-1 wrapper pushes the Footer to the bottom on short pages.
+            We don't add a <main> here — pages own their own landmark
+            (LegalLayout has one, the homepage will have one in Step 16),
+            and two <main>s in a single document is invalid HTML. */}
+        <div className="flex-1">{children}</div>
+        <Footer />
         {/* Both client components. GAScript reads GA_ID from process.env
             here in the server layout and passes it as a prop — no env
             access on the client side. CookieConsent dispatches the
