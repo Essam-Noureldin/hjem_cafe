@@ -13,6 +13,8 @@
 
 import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
+import CookieConsent from "@/components/CookieConsent";
+import GAScript from "@/components/analytics/GAScript";
 import "./globals.css";
 
 /**
@@ -107,7 +109,15 @@ export default function RootLayout({
       lang="en-GB"
       className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        {/* Both client components. GAScript reads GA_ID from process.env
+            here in the server layout and passes it as a prop — no env
+            access on the client side. CookieConsent dispatches the
+            'cookie-consent-accepted' event GAScript listens for. */}
+        <GAScript gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        <CookieConsent />
+      </body>
     </html>
   );
 }
