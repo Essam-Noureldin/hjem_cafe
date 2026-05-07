@@ -1,10 +1,12 @@
 /**
  * WHAT: The Hjem homepage — assembles the one-page brochure.
  * WHY:  Hjem's pitch is single-page: visitors land here, scroll through
- *       Story / Today's Bench / Menu / Visit, and either click "Get
- *       directions" or leave. Every section ID below matches a Navbar
- *       anchor link (`/#story`, `/#menu`, `/#visit`) — keep the IDs in
- *       sync with components/Navbar.tsx.
+ *       Story / Today's Bench / Menu / Testimonials / Visit, and either
+ *       click "Get directions" or leave. Every section ID below matches
+ *       a Navbar anchor link (`/#story`, `/#menu`, `/#visit`) — keep
+ *       the IDs in sync with components/Navbar.tsx. (Testimonials has
+ *       a section id too but is not in the navbar — keeps the nav
+ *       lean; the section is a passive proof beat, not a destination.)
  * IF REMOVED: Next.js can't build (every App Router project needs a
  *             root page).
  *
@@ -17,6 +19,7 @@ import Hero from "@/components/sections/Hero";
 import Story from "@/components/sections/Story";
 import TodaysBench from "@/components/sections/TodaysBench";
 import Menu from "@/components/sections/Menu";
+import Testimonials from "@/components/sections/Testimonials";
 import Visit from "@/components/sections/Visit";
 
 export default function Home() {
@@ -26,6 +29,7 @@ export default function Home() {
       <Story />
       <TodaysBench />
       <Menu />
+      <Testimonials />
       <Visit />
     </main>
   );
