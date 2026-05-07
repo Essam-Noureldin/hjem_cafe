@@ -131,11 +131,9 @@ MUST INCLUDE).
 Plus Testimonials (the master-prompt #5 social-proof requirement)
 shipped on top.
 
-**Next session (Session 8) options — pick whichever first:**
-- Step 17 (contact form) — the next master-prompt step in order.
-- `feature-story-owner-update` — small focused Story rewrite to
-  name Marianne Brammer + 2018 founding date now that we know
-  them. Probably 30 minutes including the test update.
+**Next session (Session 8):** Step 17 — contact form.
+(Story owner update was knocked out at the end of Session 7 —
+already on main.)
 
 > ð¡ **Recommended:** run `/compact` at the start of Session 8.
 
@@ -204,10 +202,10 @@ After Step 17:
   prompt gate is high+ only. Add to ERRORS.md in Step 21.
 - **No CLAUDE.md or ERRORS.md yet** — generation scheduled for
   Step 21. Root `CLAUDE.md` is still just `@AGENTS.md` import.
-- **Story copy still uses generic "we" framing** even though we
-  now know the owner is Marianne Brammer (founded Jan 2018).
-  Rewrite queued as `feature-story-owner-update` — kept separate
-  to honour branch scope discipline.
+- ~~Story copy uses generic "we" framing~~ — **resolved Session 7**
+  on `feature-story-owner-update`. Story now names Marianne
+  Brammer, the 2018 founding date, and identifies Gloucester Road
+  as the second room. Deviation 6.5 closed.
 - **Hjem phone number** — left out of Visit per deviation 7.1.
   Add when published.
 - **CookieConsent / GAScript SSR-only branches**
