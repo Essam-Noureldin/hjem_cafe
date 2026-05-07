@@ -66,8 +66,14 @@ interface CarouselProps {
   showArrows?: boolean;
   /** Position of prev/next arrows. 'overlay' = floats on top of slides
    *  (good for full-bleed); 'outside' = sits beside the viewport (good
-   *  for card carousels). Default 'overlay'. */
+   *  for card carousels with breathing room). Default 'overlay'. */
   arrowsPosition?: "overlay" | "outside";
+  /** Position of dot indicators. Defaults to follow `arrowsPosition`
+   *  ('overlay' → dots overlay the slides at the bottom; 'outside' →
+   *  dots sit below the carousel). Pass explicitly to mix and match —
+   *  e.g. `arrowsPosition='overlay'` + `dotsPosition='below'` for card
+   *  carousels where you want arrows on the cards but dots below. */
+  dotsPosition?: "overlay" | "below";
   /** Colour of arrows + dots. 'light' = bone (for dark slides);
    *  'dark' = ink (for light slides). Default 'light'. */
   controlsTheme?: "light" | "dark";
@@ -88,10 +94,15 @@ export default function Carousel({
   showDots = true,
   showArrows = true,
   arrowsPosition = "overlay",
+  dotsPosition,
   controlsTheme = "light",
   loop = true,
   gapClassName,
 }: CarouselProps) {
+  // Default dots to follow arrows position unless overridden.
+  const effectiveDotsPosition =
+    dotsPosition ?? (arrowsPosition === "overlay" ? "overlay" : "below");
+
   const plugins = autoplay
     ? [Autoplay({ delay: autoplayDelay, stopOnInteraction: false })]
     : [];
@@ -185,7 +196,7 @@ export default function Carousel({
         <div
           aria-hidden="true"
           className={
-            arrowsPosition === "overlay"
+            effectiveDotsPosition === "overlay"
               ? "absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-3"
               : "mt-6 flex justify-center gap-3"
           }

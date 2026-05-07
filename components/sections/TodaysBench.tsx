@@ -115,17 +115,17 @@ export default function TodaysBench() {
           Most of it&apos;s gone by lunch.
         </p>
 
-        {/* Outside-positioned arrows + dots beneath. The viewport
-            sits within the max-w-6xl container; arrows hang inside the
-            container's edges on desktop, just inside the viewport on
-            mobile. */}
-        <div className="mt-12 px-2 sm:px-12">
+        {/* Overlay arrows on the cards + dots below. Outside arrows
+            looked airier on desktop but got cut off on mobile; overlay
+            keeps them visible at every viewport width. */}
+        <div className="mt-12">
           <Carousel
             ariaLabel="Featured items today"
             slides={slides}
             slideClassName="min-w-0 flex-[0_0_85%] sm:flex-[0_0_47%] lg:flex-[0_0_31%]"
             gapClassName="gap-5"
-            arrowsPosition="outside"
+            arrowsPosition="overlay"
+            dotsPosition="below"
             controlsTheme="dark"
             showDots
             autoplay={false}

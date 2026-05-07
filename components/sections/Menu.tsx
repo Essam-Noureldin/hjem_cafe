@@ -258,16 +258,16 @@ export default function Menu() {
           Everything below is baked, fermented, or pulled here.
         </p>
 
-        {/* Wider padding on the carousel container than on Today's
-            bench because Menu cards are taller (full item lists) — gives
-            the prev/next arrows space without touching the cards. */}
-        <div className="mt-12 px-2 sm:px-12">
+        {/* Overlay arrows on the cards + dots below — same reason as
+            TodaysBench: outside arrows clipped on mobile widths. */}
+        <div className="mt-12">
           <Carousel
             ariaLabel="Hjem menu categories"
             slides={slides}
             slideClassName="min-w-0 flex-[0_0_90%] sm:flex-[0_0_60%] lg:flex-[0_0_45%]"
             gapClassName="gap-5"
-            arrowsPosition="outside"
+            arrowsPosition="overlay"
+            dotsPosition="below"
             controlsTheme="dark"
             showDots
             autoplay={false}

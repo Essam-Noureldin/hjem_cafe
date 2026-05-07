@@ -150,11 +150,11 @@ export default function Hero() {
                   upper composition reads through the scrim. */}
               <div className="relative z-10 flex h-full flex-col items-center justify-end px-6 pb-24 text-center text-bone sm:pb-32">
                 {slide.isPrimary ? (
-                  <h1 className="font-display text-7xl tracking-tight sm:text-8xl md:text-9xl">
+                  <h1 className="font-display text-5xl tracking-tight sm:text-7xl md:text-8xl lg:text-9xl">
                     {slide.heading}
                   </h1>
                 ) : (
-                  <p className="font-display text-6xl tracking-tight sm:text-7xl md:text-8xl">
+                  <p className="font-display text-4xl tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
                     {slide.heading}
                   </p>
                 )}
