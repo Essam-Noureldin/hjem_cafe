@@ -110,14 +110,27 @@ export default function Carousel({
     : [];
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop, align: "start" }, plugins);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  /**
+   * scrollSnaps mirrors embla's scrollSnapList — one entry per snap
+   * position. This is NOT the same as slides.length: when multiple
+   * slides are visible at once (track carousels with `flex-[0_0_30%]`
+   * etc.), embla creates fewer snap points than slides. Rendering
+   * one dot per slide in those cases gives "extra" dots that don't
+   * map to anything. Always source the dot count from here.
+   */
+  const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 
   useEffect(() => {
     if (!emblaApi) return;
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
+    const onReInit = () => setScrollSnaps(emblaApi.scrollSnapList());
     onSelect();
+    onReInit();
     emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onReInit);
     return () => {
       emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onReInit);
     };
   }, [emblaApi]);
 
@@ -240,7 +253,7 @@ export default function Carousel({
               : "mt-6 flex justify-center gap-3"
           }
         >
-          {slides.map((_, index) => (
+          {scrollSnaps.map((_, index) => (
             <button
               key={index}
               type="button"
