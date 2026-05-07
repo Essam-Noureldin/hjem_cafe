@@ -533,6 +533,43 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
 
 ---
 
+### 6.7 Branch-per-feature workflow declared mid-session
+- **Prompt says:** Master prompt's git/commit guidance describes a
+  linear, direct-to-main workflow with descriptive commit messages.
+  Doesn't address feature branches.
+- **What we did:** Mid-Session 6 (2026-05-07), Essam declared a new
+  workflow rule: every new feature, section, or non-trivial change
+  ships on its own branch off `main`, merged back when confirmed
+  working. Trivial fixes (typo, kill server, one-line edit) can
+  stay on whichever branch is currently checked out.
+- **Why:** the BakeMyDay-inspired redesign was the first time we
+  used a branch (`redesign-bakemyday-inspired`) as a parallel
+  exploration — gave Essam a safe place to experiment without
+  risking the editorial design on `main`. Worked well enough that
+  he wants it as the default pattern going forward. Side benefit:
+  branch history is useful evidence for what changed when, beyond
+  what commit messages alone capture.
+- **Application detail:**
+  - First commit on a feature branch sets up scaffolding (test
+    file, etc.); subsequent commits build the feature test-first
+    per existing rules.
+  - Push the branch on first commit so it exists at remote.
+  - On merge: prefer fast-forward (`git merge --ff-only`); accept a
+    merge commit only if main has moved during the feature work.
+  - Branches stay in remote unless Essam asks to prune them. The
+    history value beats the cleanup discipline.
+- **Memory:** saved as `feedback_branch_per_feature.md` so the rule
+  survives `/compact` and future sessions.
+- **Prompt update:** Add a "Branch workflow" section to the master
+  prompt: "Every feature ships on its own branch off main. Branch
+  name describes the feature (`feature-contact-form`,
+  `redesign-X-inspired`, `fix-mobile-nav`). First commit sets up
+  scaffolding; subsequent commits build test-first. Merge fast-forward
+  when the feature is confirmed done. Trivial fixes (typos, dev
+  server restarts, one-line edits) bypass branching."
+
+---
+
 ## How to maintain this file
 
 - Append a new entry under the current Session header whenever you
