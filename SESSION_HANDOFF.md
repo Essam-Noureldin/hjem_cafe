@@ -7,10 +7,11 @@
 
 ## What Was Completed in Session 7
 
-### Step 16 finished — Visit section shipped
+### Step 16 finished — Visit section shipped, plus Testimonials added
 
-The last remaining homepage stub is now real. Step 16 (homepage
-sections) is fully complete.
+Step 16 (homepage sections) fully complete; Testimonials added on top
+to cover master prompt's "social proof" requirement (#5 in EVERY SITE
+MUST INCLUDE).
 
 #### Visit section
 - **Layout:** two-column on desktop (info left, shopfront image
@@ -41,13 +42,70 @@ sections) is fully complete.
 - `app/page.tsx` updated: imports Visit, removes the `SectionStub`
   helper (Visit was its only consumer).
 
+### Testimonials section (added after Visit shipped)
+
+#### What
+- 3 real, attributed customer/critic quotes pulled from public
+  review platforms — TripAdvisor (Karen55115 5★ Feb 2025, Mrs Sarah
+  G 5★ Jan 2022) and The Infatuation (Oliver Feldman, Jan 2020).
+- Each card is a `<blockquote>` with `cite=` URL pointing to the
+  source page; visible `<cite>` shows reviewer name, source platform,
+  date, and rating where available. Source name is itself a link.
+- Sits between Menu and Visit so trust is established before the
+  "Get directions" CTA.
+- Three different voices (critic / foodie tourist / local family)
+  across three different time spans — sustained quality, not a
+  cherry-picked moment.
+
+#### Why this approach (not Google scraping, not generated reviews)
+- **No Google scraping:** Google's TOS prohibits it, and reviews
+  are JS-rendered so server-side fetch returns nothing useful
+  anyway. The legitimate Google path is the Places API — costs
+  money, needs CSP relax, overkill for a demo. See deviation 7.2.
+- **No generated reviews:** UK Digital Markets, Competition and
+  Consumers Act 2024 (in force April 2025) makes publishing fake
+  reviews a civil offence with fines up to 10% of global turnover.
+  Same omit-don't-invent rule we apply to menu prices (6.4 / 6.6)
+  and Visit phone number (7.1).
+- Quoting short excerpts of real published reviews with full
+  attribution and source links is standard editorial fair use.
+
+#### Workflow followed
+- Branch-per-feature: built on `feature-testimonials`, fast-forward
+  merged to `main`, both branches pushed.
+- Test-first: `Testimonials.test.tsx` (6 tests, includes a
+  real-source guard that fails if a quote ever ships without a
+  verifiable platform attribution).
+- `app/page.tsx` updated: imports Testimonials, sits between Menu
+  and Visit. Section id="testimonials" but intentionally not in the
+  navbar — passive proof beat, not a destination.
+
+### Bonus discovery — owner identity confirmed
+- Same web research that surfaced the testimonial quotes also
+  confirmed Hjem's owner: **Marianne Brammer**, Danish-born, opened
+  Hjem in **January 2018**. Original location 3 Launceston Place,
+  expanded to 157 Gloucester Road. The cardamom bun recipe is hers.
+- This resolves the open question from deviation 6.5 (Story uses
+  generic "we" framing because owner was unknown).
+- **Queued as separate branch** `feature-story-owner-update` —
+  kept out of the testimonials branch to honour scope discipline
+  per branch-per-feature rule (6.7). Should be a small focused
+  rewrite of Story's prose to name Marianne and the 2018 founding
+  date.
+
 ---
 
 ## Current Build Step
 
 **Steps 1–16 of the master prompt's build order are COMPLETE.**
+Plus Testimonials (the master-prompt #5 social-proof requirement)
+shipped on top.
 
-**Next session (Session 8):** Step 17 — contact form.
+**Next session (Session 8) options — pick whichever first:**
+- Step 17 (contact form) — the next master-prompt step in order.
+- `feature-story-owner-update` — small focused Story rewrite to
+  name Marianne Brammer + 2018 founding date now that we know
+  them. Probably 30 minutes including the test update.
 
 > ð¡ **Recommended:** run `/compact` at the start of Session 8.
 
@@ -86,6 +144,10 @@ After Step 17:
 | Two-column desktop, info-on-top mobile stack | Info-density side reads first when the layout collapses — visitor sees address/hours/CTA before scrolling past the image | Image-on-top mobile (visitor scrolls past the photo before getting to the actionable info) |
 | Phone number omitted | Not in Essam's research; omit beats invent (same rule as deviations 6.4 / 6.6) | Invent a placeholder number (lies on a demo site, deletes trust if Essam shows it to the real Hjem owners) |
 | Hours rendered as `<dl>` with weekday `<dt>` / time `<dd>` | Correct semantic for label:value pairs; screen readers announce as a definition list | Plain divs (loses the semantic relationship for a11y) |
+| Testimonials use real quoted reviews from public platforms (TripAdvisor, The Infatuation) | Editorial fair use is the legitimate path; UK DMCC Act 2024 makes fake reviews a 10%-of-turnover offence; Google scraping is TOS-prohibited and Google reviews are JS-rendered anyway | Generated/invented "plausible" reviews (illegal); Google reviews scrape (TOS + technical); Google Places API embed (overkill — money + CSP relax + caching infra for a demo) |
+| Testimonials sits between Menu and Visit (not in navbar) | Trust is established immediately before the "Get directions" CTA; passive proof beat doesn't earn a navbar slot | Above Menu (proof before menu interest is unmotivated); below Visit (too late — visitor has already decided whether to come); add to navbar (clutter for a one-page brochure) |
+| Three voices on purpose (critic / tourist / family, 2020/2022/2025) | Different angles + different time spans demonstrate sustained quality, not a cherry-picked moment | Three quotes from one platform / one period (looks suspicious); single hero quote (single voice carries less weight than three corroborating ones) |
+| Testimonials.tsx coverage 100%, 6 tests including real-source guard | Catches a future regression where someone quietly ships an unattributed or invented quote | Skip the source-name regex (test passes for any text in `<cite>`, no protection against future drift) |
 
 ---
 
@@ -96,6 +158,11 @@ After Step 17:
   its only consumer.
 - â All Step-16 sub-sections now ship in their final form: Hero,
   Story, Today's Bench, Menu, Visit.
+- â Master prompt's #5 (social proof) requirement now covered by
+  the Testimonials section between Menu and Visit.
+- â Hjem owner identity confirmed: **Marianne Brammer**, Danish-
+  born, opened Jan 2018. Cardamom bun recipe is hers. (Story copy
+  rewrite queued as separate `feature-story-owner-update` branch.)
 
 ### Carried over from Session 6 (still open)
 - **Drinks menu unknown.** Counter menu Essam photographed is
@@ -107,9 +174,10 @@ After Step 17:
   prompt gate is high+ only. Add to ERRORS.md in Step 21.
 - **No CLAUDE.md or ERRORS.md yet** — generation scheduled for
   Step 21. Root `CLAUDE.md` is still just `@AGENTS.md` import.
-- **Hjem owners' actual identity** — still unknown. Story copy
-  stays in generic "we" framing per deviation 6.5 until real
-  owner copy arrives.
+- **Story copy still uses generic "we" framing** even though we
+  now know the owner is Marianne Brammer (founded Jan 2018).
+  Rewrite queued as `feature-story-owner-update` — kept separate
+  to honour branch scope discipline.
 - **Hjem phone number** — left out of Visit per deviation 7.1.
   Add when published.
 - **CookieConsent / GAScript SSR-only branches**
@@ -128,7 +196,7 @@ After Step 17:
 
 ## Test Status
 
-- **144 tests passing** across 15 suites (137 → 144, +7 from Session 7)
+- **150 tests passing** across 16 suites (137 → 150, +13 from Session 7)
   - env.test.ts: 18
   - sanitize.test.ts: 16
   - rate-limit.test.ts: 10
@@ -144,8 +212,10 @@ After Step 17:
   - TodaysBench.test.tsx: 5
   - Carousel.test.tsx: 19
   - **Visit.test.tsx: 7** *(new in Session 7)*
-- Coverage: **93.68% statements, 92.94% branches, 87.69% functions, 95.16% lines**
+  - **Testimonials.test.tsx: 6** *(new in Session 7)*
+- Coverage: **93.77% statements, 93.10% branches, 88.05% functions, 95.23% lines**
   - Visit.tsx: **100% on every metric**
+  - Testimonials.tsx: **100% on every metric**
   - All sections at 100% on every metric except Hero (85.71% statements, 91.66% lines — slide-event handlers not exercised by jsdom)
   - Carousel.tsx: 86.36% statements, 91.83% branches (uncovered: edge-cycling fallbacks that embla doesn't fire in jsdom)
   - sanitize.ts, rate-limit.ts, honeypot.ts: 100% on every metric
@@ -153,7 +223,7 @@ After Step 17:
   - CookieConsent.tsx: 95% statements (line 61 = `getServerSnapshot`, SSR-only)
   - GAScript.tsx: 95% statements (line 59 = `getServerSnapshot`, SSR-only)
   - env.ts: 94.73% statements (intentional uncovered branch)
-- Last full suite run: **PASSED** (6.259s)
+- Last full suite run: **PASSED** (6.405s)
 - Last `next build`: **PASSED** (sitemap regenerated, zero errors)
 
 ### Tests still to write (next sessions, in build order)

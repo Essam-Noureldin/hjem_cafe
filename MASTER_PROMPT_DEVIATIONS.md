@@ -601,6 +601,63 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
   before consent)." Phone should be marked optional: include if
   the business publishes one, omit rather than invent.
 
+### 7.2 Testimonials section uses real attributed quotes from public review platforms — never Google scraping or generated reviews
+- **Prompt says:** Under "EVERY SITE MUST INCLUDE" #5: "Social proof —
+  testimonials or Google review quotes." Doesn't specify the source
+  of the quotes or address the legal landscape around fake reviews.
+- **What we did:** Built the Testimonials section with 3 short
+  excerpts quoted verbatim from public review platforms — TripAdvisor
+  and The Infatuation. Each `<blockquote>` carries a `cite=` URL
+  pointing to the original review page; the visible `<cite>` element
+  shows the reviewer name, source platform, date, and (where
+  available) star rating. Source links open in new tabs with
+  `noopener noreferrer`.
+- **Why two things we explicitly did NOT do:**
+  - **Did NOT scrape Google reviews.** Google's TOS prohibits
+    scraping, and Google renders reviews client-side via JS so
+    server-side fetch only gets the empty shell anyway. The
+    legitimate Google path is the Places API, which costs money,
+    requires a CSP `connect-src` relax, and adds server-side
+    caching infrastructure — overkill for a demo.
+  - **Did NOT generate "plausible-sounding" reviews.** The UK
+    Digital Markets, Competition and Consumers Act 2024 (in force
+    April 2025) makes publishing fake or misleading reviews a
+    civil offence with fines up to **10% of global turnover**.
+    "Plausible but invented" is exactly what that law targets.
+    Same omit-don't-invent rule we already follow for menu prices
+    (6.4 / 6.6) and the Visit phone number (7.1).
+- **Editorial fair use:** quoting short excerpts of publicly
+  published reviews with full attribution is the same pattern a
+  press piece would follow — well within editorial norms. The
+  test enforces real attribution: every `<cite>` must name a
+  verifiable platform and the `cite=` URL must be `https://...`,
+  so a future contributor can't quietly drop in an unattributed
+  quote.
+- **Three voices on purpose:** a critic (Oliver Feldman / The
+  Infatuation, 2020), a foodie tourist (Karen55115 / TripAdvisor
+  5★, 2025), and a local family (Mrs Sarah G / TripAdvisor 5★,
+  2022). Different time spans show sustained quality, not a
+  single moment.
+- **Owner identity discovered:** the same web research that
+  surfaced these reviews also confirmed the Hjem owner's name —
+  **Marianne Brammer**, Danish-born, opened January 2018. This
+  resolves an open question from deviation 6.5 (Story uses
+  generic "we" framing because owner was unknown). Story rewrite
+  to use Marianne's name + 2018 founding date is queued as a
+  separate `feature-story-owner-update` branch — kept out of this
+  one to honour the branch-per-feature scope rule (6.7).
+- **Prompt update:** Replace "social proof — testimonials or
+  Google review quotes" with: "Social proof — short excerpts of
+  real published reviews from public platforms (TripAdvisor, The
+  Infatuation, Yelp, press), each with full attribution and a
+  link to the original. Do NOT scrape Google reviews (TOS-
+  prohibited, JS-rendered) and do NOT generate plausible-sounding
+  reviews (illegal in UK under DMCC Act 2024, fines up to 10% of
+  global turnover). For live Google reviews, use the Google
+  Places API with server-side caching and a CSP `connect-src`
+  relax — only worth the infrastructure cost once the site has
+  real customer flow."
+
 ---
 
 ## How to maintain this file
