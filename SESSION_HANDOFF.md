@@ -1,181 +1,123 @@
 # Session Handoff
-**Generated:** 2026-05-07 (end of Session 6)
+**Generated:** 2026-05-07 (end of Session 7)
 **Project:** Hjem Kensington — speculative demo build (UK indie cafe)
 **Operator:** Essam (solo freelancer)
 
 ---
 
-## What Was Completed in Session 6
+## What Was Completed in Session 7
 
-### Step 16 sub-divided into commits, then redesigned
+### Step 16 finished — Visit section shipped
 
-Step 16 (homepage sections) split across many sub-commits, both on
-`main` and on a `redesign-bakemyday-inspired` branch that has now
-been merged back to `main`. Net delivered:
+The last remaining homepage stub is now real. Step 16 (homepage
+sections) is fully complete.
 
-#### Sections shipping in their final form
-- **Hero** — 3-slide auto-rotating carousel (Velkommen / Made before
-  light / Find us on Gloucester Road) with moss-green nav controls,
-  embla-carousel-react under the hood. Slide 1 carries the page-level
-  `<h1>`; slides 2-3 use `<p>` so the heading outline stays single-h1.
-- **Story** — moss-green band, two-column on desktop. Image side is a
-  3-slide auto-rotating carousel (predawn cooling rack, hands at
-  dough, tools still-life). Prose side: 3 paragraphs of generic-but-
-  grounded "we" framing, no invented founders.
-- **Today's Bench** *(new section, not in original prompt)* — between
-  Story and Menu. Horizontal product carousel of 4 featured items
-  (Cardamom Bun, Stone-milled Sourdough, Flat White, Ceremonial
-  Matcha). User-driven, no autoplay.
-- **Menu** — synced with the **real** in-store counter menu Essam
-  photographed mid-session. 3 categories (HJEMmade Bakery, Buns &
-  Pastries, Bread Station), 23 real items, real prices verbatim
-  including dual full/half pricing for sourdough loaves. Drinks
-  removed for now (the photographed menu is bakery-only).
-  Horizontal card carousel — overlay moss arrows + below-the-cards
-  dots.
+#### Visit section
+- **Layout:** two-column on desktop (info left, shopfront image
+  right), stacks on mobile (info on top, image below).
+- **Content (real, from Essam's in-store research):**
+  - Address: 157 Gloucester Road, London, SW7 4TH
+  - Hours: Mon–Fri 7:30–17:00, Sat & Sun 8:30–17:00
+  - Headline: "One room on Gloucester Road."
+  - Subhead: "South Kensington, two minutes from the tube."
+- **CTA:** "Get directions" button links to
+  `https://www.google.com/maps/?q=157+Gloucester+Road+London+SW7+4TH`
+  with `target="_blank"` + `rel="noopener noreferrer"`. Taps
+  straight into the native Maps app on mobile.
+- **Image:** reuses `/public/images/hero-shopfront.jpeg` — appears
+  5+ scroll-lengths after the Hero rotation, so recall is "yes,
+  that place" not repetition.
+- **No iframe:** chose an outbound link over an embedded Google
+  Maps widget. Keeps CSP `frame-src 'none'` intact, avoids loading
+  Google's trackers before consent, no LCP hit. See deviation 7.1.
+- **Phone:** intentionally omitted — Hjem's published number wasn't
+  in research. Same omit-don't-invent rule as deviations 6.4 / 6.6.
 
-#### Section still stubbed
-- **Visit** — still the "Coming up" placeholder. Real address (157
-  Gloucester Road, SW7 4TH) and hours (Mon-Fri 7:30-17:00, Sat & Sun
-  8:30-17:00) are confirmed and ready to ship in a follow-up session.
-
-#### New shared component
-- **`components/Carousel.tsx`** — reusable wrapper around
-  embla-carousel-react. Used by Story, TodaysBench, Menu (Hero has its
-  own bespoke implementation). API supports control themes
-  (light / dark / moss), arrow positions (overlay / outside), and
-  per-prop dotsPosition override. Manual cycling on the prev/next
-  callbacks for cases where embla's loop silently disables (track
-  carousels with too few slides for the visible count).
-
-### Imagery generated and committed
-- 3 hero slides (`/public/images/hero-interior.jpeg`,
-  `hero-pastries.jpeg`, `hero-shopfront.jpeg`)
-- 3 story slides (`/public/images/story-1.jpeg`, `story-2.jpeg`,
-  `story-3.jpeg`)
-- 4 bench items (`/public/images/bench-cardamom.jpeg`,
-  `bench-sourdough.jpeg`, `bench-flatwhite.jpeg`, `bench-matcha.jpeg`)
-- 5 menu category images in `/public/images/menu/` (`bakery.jpeg`,
-  `pastries.jpeg`, `kitchen.jpeg`, `coffee.jpeg`, `matcha.jpeg`,
-  `hjemmade.jpeg`) — `kitchen`, `coffee`, and `matcha` are unused
-  while drinks/kitchen sections aren't on the live menu but live in
-  the folder for if they come back.
-- Original Step 16 hero (`hero.jpg`) and unfinished Story image
-  (`story.jpeg`) remain in `/public/images/` but aren't referenced —
-  carry-over from earlier sub-commits, harmless.
-
-All AI-generated. Deviation 6.2 covers the imagery workflow.
-
-### Workflow shift declared mid-session
-- **Branch-per-feature** is now the default workflow on this project
-  and any other under `apps_websites/`. Every new feature, section,
-  or non-trivial change ships on its own branch off `main`, merged
-  back when confirmed working. Trivial fixes (typos, server
-  restarts) bypass branching. Saved as feedback memory and as
-  deviation 6.7.
-
-### Quirks resolved during Session 6
-
-- **`upgrade-insecure-requests` CSP directive blocked HTTP testing
-  of the production build over LAN.** When a phone hits
-  `http://192.168.1.59:3000`, the browser auto-rewrites every
-  CSS/JS sub-resource request to `https://...` and they all 404.
-  Fix: added `LOCAL_HTTP_TEST=1` env var in `next.config.ts` that
-  skips just that one directive. Default CSP unchanged for prod.
-- **Embla `loop: true` silently disables when slides are < snapsInView × 2.**
-  Symptom: right arrow stops working at the end on desktop. Fix:
-  manual cycling in scrollPrev/scrollNext — fall back to scrollTo(0)
-  or scrollTo(last) when canScroll returns false.
-- **Embla `scrollSnapList()` length ≠ slides length on track carousels.**
-  Was rendering one dot per slide; on desktop with 2-3 cards visible,
-  some dots had no real snap point. Fix: source dot count from
-  `scrollSnapList()` via the `reInit` event.
-- **Mobile carousel arrows clipping when `arrowsPosition='outside'`.**
-  Container wrapper had `px-2` on mobile, not enough room. Switched
-  Menu and TodaysBench to overlay arrows with dots-below.
-- **Hero headline text-7xl overflowing on phones.** Scaled mobile
-  sizes down: text-5xl primary / text-4xl secondary, scaling up at
-  sm/md/lg.
+#### Workflow followed
+- Branch-per-feature: built on `feature-visit`, fast-forward merged
+  to `main`, both branches pushed to remote.
+- Test-first: `Visit.test.tsx` (7 tests) written and red-confirmed
+  before `Visit.tsx`.
+- `app/page.tsx` updated: imports Visit, removes the `SectionStub`
+  helper (Visit was its only consumer).
 
 ---
 
 ## Current Build Step
 
-**Steps 1-15 of the master prompt's build order are COMPLETE.**
-**Step 16 is partially shipped:** Hero, Story, TodaysBench, Menu are
-real; Visit is still a stub.
+**Steps 1–16 of the master prompt's build order are COMPLETE.**
 
-**Next session (Session 7):** Build the Visit section. Real content
-ready: 157 Gloucester Road, SW7 4TH, Mon-Fri 7:30-17:00, Sat & Sun
-8:30-17:00. Probably a 2-column layout (info left, embedded map or
-shopfront image right) — match the moss/cream rhythm with whatever
-fits the page flow best.
+**Next session (Session 8):** Step 17 — contact form.
 
-After Visit:
-- Step 17: Contact form
-- Steps 18-22: per master prompt
+> ð¡ **Recommended:** run `/compact` at the start of Session 8.
 
-> 💡 **Recommended:** run `/compact` at the start of Session 7.
+> â ï¸ **Open questions for Session 8 (Contact form):**
+> - Form fields: master prompt baseline is name / email / message.
+>   Hjem-specific extras (occasion, party size, allergens) — worth
+>   asking Essam if the form should serve a wholesale/event enquiry
+>   use case as well as walk-in feedback.
+> - Per master prompt: write `ContactForm.test.tsx` AND
+>   `tests/integration/api/contact-form.test.ts` BEFORE the
+>   implementation. Both must cover honeypot, rate limit,
+>   sanitization, validation, error shape.
+> - Resend integration: needs `RESEND_API_KEY`,
+>   `CONTACT_FORM_FROM_EMAIL`, `CONTACT_FORM_TO_EMAIL` set in
+>   `.env.local` AND on Vercel before deploy. `lib/env.ts` will
+>   throw at startup if missing — confirm Essam has a Resend
+>   account first.
 
-> ⚠️ **Open questions for Session 7:**
-> - Visit section design: side-by-side info + map embed, or stacked
->   image-then-info? CSP currently has `frame-src 'none'`; embedding
->   a Google Maps iframe means relaxing that to
->   `frame-src https://www.google.com`. Or use a static map image
->   (no iframe, no CSP change).
-> - Once Visit lands, run final smoke tests for Step 20.
+After Step 17:
+- Step 18: Sentry scaffold (security headers must remain inside
+  `withSentryConfig` wrapper)
+- Step 19: Security headers integration test
+- Step 20: Smoke tests + final coverage gate
+- Step 21: All 15 docs in `/docs/` (CLAUDE.md, README.md,
+  ARCHITECTURE.md, etc.)
+- Step 22: DELIVERY_CHECKLIST.md
 
 ---
 
-## Decisions Made in Session 6
+## Decisions Made in Session 7
 
 | Decision | Reasoning | Alternatives rejected |
 |---|---|---|
-| Sub-divide Step 16 across many commits | Five sections with imagery + tests is too much for one session at master-prompt quality | Ship all at once (would have run out of context, low test discipline) |
-| Build BakeMyDay-inspired redesign on a feature branch | Parallel design exploration; safe to abandon if Essam disliked it | Modify main directly (risky for a one-page demo) |
-| Adopt branch-per-feature as default workflow | Worked well on the redesign branch; cost of an unused branch is zero | Keep direct-to-main for everything (loses safety + history clarity) |
-| Sync Menu with real photographed menu mid-session | Real names + prices always beat plausible ones once supplied | Keep speculative menu and update later (would have shipped wrong info) |
-| Drop drinks (coffee, tea, matcha) from Menu after sync | Photographed menu is bakery-only — drinks live on a different menu we don't have | Keep speculative drinks alongside real bakery (mixed-truth, dishonest demo) |
-| Bespoke Hero carousel, generic Carousel for the rest | Hero's full-viewport h1 + per-slide CTA shape was too specific to lift cleanly | Force everything through the generic component (would have made the API muddy) |
-| Manual cycling in scrollPrev/scrollNext at edges | Embla's loop quirk made arrows feel broken on desktop track carousels | Disable arrows at edges (looks intentional but worse UX); use a different library (overkill) |
-| Single new dependency (embla-carousel-react + autoplay, ~7KB) | Accessible, lightweight, modern; alternatives were heavier (swiper) or hand-rolled (more code, more bugs) | Roll own carousel logic (more LOC, less battle-tested) |
-| HJEMmade card uses moss-green fallback bg until image lands | Same pattern as Hero on `main` — section reads as intentional even with missing image | Block the commit until image arrives (kills momentum) |
-| `LOCAL_HTTP_TEST=1` env var to skip `upgrade-insecure-requests` | Right escape hatch — opt-in, doesn't weaken default | Remove the directive entirely (would weaken prod CSP) or test only over HTTPS via ngrok (extra signup) |
+| Outbound Google Maps directions link, no iframe | Keeps strict CSP (`frame-src 'none'`) intact, no third-party trackers before consent, no LCP hit, taps into native Maps app on mobile | Embedded Google Maps iframe (would force CSP relax + load Google trackers regardless of consent state); static map image (extra asset to commission, no real benefit over a link for this use case) |
+| Reuse `hero-shopfront.jpeg` for Visit image | Already in repo, perfect "find us" framing, appears 5+ scrolls after Hero so it reads as recall not repeat | Generate a new dedicated Visit image (extra Essam effort for marginal gain — can swap later if a better shot emerges) |
+| Two-column desktop, info-on-top mobile stack | Info-density side reads first when the layout collapses — visitor sees address/hours/CTA before scrolling past the image | Image-on-top mobile (visitor scrolls past the photo before getting to the actionable info) |
+| Phone number omitted | Not in Essam's research; omit beats invent (same rule as deviations 6.4 / 6.6) | Invent a placeholder number (lies on a demo site, deletes trust if Essam shows it to the real Hjem owners) |
+| Hours rendered as `<dl>` with weekday `<dt>` / time `<dd>` | Correct semantic for label:value pairs; screen readers announce as a definition list | Plain divs (loses the semantic relationship for a11y) |
 
 ---
 
 ## Known Issues or Open Questions
 
-### Resolved during Session 6
-- ✅ Step-16 sub-divide pattern (Hero → Story → TodaysBench → Menu).
-- ✅ Real menu data sync from in-store photograph.
-- ✅ Mobile responsiveness pass on Hero text + card carousel arrows.
-- ✅ Carousel cycling at end (manual `scrollTo(0)` fallback).
-- ✅ Dot-count drift (use `scrollSnapList()` length).
-- ✅ `upgrade-insecure-requests` blocking HTTP LAN testing.
-- ✅ Branch-per-feature workflow decision.
+### Resolved during Session 7
+- â `SectionStub` helper deleted from `app/page.tsx` — Visit was
+  its only consumer.
+- â All Step-16 sub-sections now ship in their final form: Hero,
+  Story, Today's Bench, Menu, Visit.
 
-### Carried over / still open
-- **Visit section not yet built.** Address + hours + map design
-  decision pending — see "Open questions for Session 7" above.
-- **Drinks menu unknown.** When it surfaces, add a Drinks card back
-  to the Menu carousel using the unused `coffee.jpeg` and
+### Carried over from Session 6 (still open)
+- **Drinks menu unknown.** Counter menu Essam photographed is
+  bakery-only. When the drinks list surfaces, add a Drinks card
+  back to the Menu carousel using the unused `coffee.jpeg` and
   `matcha.jpeg` images already in `/public/images/menu/`.
 - **2 moderate-severity vulnerabilities** in Next.js's bundled
   `postcss` dep (`GHSA-qx2v-qp2m-jg93`). Not actionable. Master
   prompt gate is high+ only. Add to ERRORS.md in Step 21.
 - **No CLAUDE.md or ERRORS.md yet** — generation scheduled for
-  Step 21.
+  Step 21. Root `CLAUDE.md` is still just `@AGENTS.md` import.
 - **Hjem owners' actual identity** — still unknown. Story copy
   stays in generic "we" framing per deviation 6.5 until real
   owner copy arrives.
-- **Boilerplate `app/page.tsx`** — replaced; now imports Hero,
-  Story, TodaysBench, Menu, plus a single SectionStub for Visit.
+- **Hjem phone number** — left out of Visit per deviation 7.1.
+  Add when published.
 - **CookieConsent / GAScript SSR-only branches**
   (`getServerSnapshot`) intentionally uncovered. Suite well above
   gates.
-- **Sitemap regeneration** — use `npm run build` (not `npx next build`)
-  to fire `postbuild`. If stale, run `npx next-sitemap` directly.
+- **Sitemap regeneration** — use `npm run build` (not `npx next
+  build`) to fire `postbuild`. If stale, run `npx next-sitemap`
+  directly.
 - **Standalone production server testing on phone:** copy
   `public/` and `.next/static/` into `.next/standalone/` after
   build, then `node .next/standalone/server.js` with
@@ -186,7 +128,7 @@ After Visit:
 
 ## Test Status
 
-- **137 tests passing** across 14 suites (118 → 137, +19 from Session 6)
+- **144 tests passing** across 15 suites (137 → 144, +7 from Session 7)
   - env.test.ts: 18
   - sanitize.test.ts: 16
   - rate-limit.test.ts: 10
@@ -196,31 +138,31 @@ After Visit:
   - cookie-consent-ga.test.tsx: 6
   - Navbar.test.tsx: 7
   - Footer.test.tsx: 4
-  - **Hero.test.tsx: 6** *(rewrote for carousel)*
-  - **Story.test.tsx: 5** *(updated for carousel)*
-  - **Menu.test.tsx: 6** *(updated for carousel)*
-  - **TodaysBench.test.tsx: 5** *(new in Session 6)*
-  - **Carousel.test.tsx: 19** *(new in Session 6)*
-- Coverage: **93.53% statements, 92.94% branches, 87.3% functions, 95.02% lines**
-  - All sections at 100% on every metric except Hero (85.71% statements)
+  - Hero.test.tsx: 6
+  - Story.test.tsx: 5
+  - Menu.test.tsx: 6
+  - TodaysBench.test.tsx: 5
+  - Carousel.test.tsx: 19
+  - **Visit.test.tsx: 7** *(new in Session 7)*
+- Coverage: **93.68% statements, 92.94% branches, 87.69% functions, 95.16% lines**
+  - Visit.tsx: **100% on every metric**
+  - All sections at 100% on every metric except Hero (85.71% statements, 91.66% lines — slide-event handlers not exercised by jsdom)
   - Carousel.tsx: 86.36% statements, 91.83% branches (uncovered: edge-cycling fallbacks that embla doesn't fire in jsdom)
   - sanitize.ts, rate-limit.ts, honeypot.ts: 100% on every metric
   - DemoDisclaimer.tsx, LegalLayout.tsx, Footer.tsx, Navbar.tsx: 100%
   - CookieConsent.tsx: 95% statements (line 61 = `getServerSnapshot`, SSR-only)
   - GAScript.tsx: 95% statements (line 59 = `getServerSnapshot`, SSR-only)
   - env.ts: 94.73% statements (intentional uncovered branch)
-- Last full suite run: **PASSED** (5.913s)
-- Last `next build`: **PASSED** (5 routes prerendered: /, /cookie-policy, /privacy-policy, /terms-and-conditions, /_not-found)
-- Last sitemap regeneration: **PASSED** (4 public URLs)
+- Last full suite run: **PASSED** (6.259s)
+- Last `next build`: **PASSED** (sitemap regenerated, zero errors)
 
 ### Tests still to write (next sessions, in build order)
-1. `tests/unit/components/sections/Visit.test.tsx` (Step 16 finish)
-2. `tests/unit/components/ContactForm.test.tsx` (Step 17)
-3. `tests/integration/api/contact-form.test.ts` (Step 17)
-4. `tests/integration/api/security-headers.test.ts` (Step 19)
-5. `tests/smoke/render.test.tsx` (Step 20)
-6. `tests/smoke/navigation.test.tsx` (Step 20)
-7. `tests/smoke/accessibility.test.tsx` (Step 20)
+1. `tests/unit/components/ContactForm.test.tsx` (Step 17)
+2. `tests/integration/api/contact-form.test.ts` (Step 17)
+3. `tests/integration/api/security-headers.test.ts` (Step 19)
+4. `tests/smoke/render.test.tsx` (Step 20)
+5. `tests/smoke/navigation.test.tsx` (Step 20)
+6. `tests/smoke/accessibility.test.tsx` (Step 20)
 
 ---
 
@@ -229,21 +171,23 @@ After Visit:
 1. Open Claude Code in `c:\Users\noure\Desktop\apps_websites\websites\` (the parent — `git -C hjem-kensington` works for git commands).
 2. Paste **MASTER_PROMPT.md** at session start.
 3. Paste **this SESSION_HANDOFF.md**.
-4. State: *"Resuming Hjem Kensington build from Step 16 — Visit section."*
-5. Claude should run the four health-check commands, confirm clean state, then present a Session 7 plan covering the Visit section before writing code.
-6. Per the new branch-per-feature rule, the first move on a non-trivial feature is to create a branch — name it `feature-visit` or similar before any code changes.
+4. State: *"Resuming Hjem Kensington build from Step 17 — Contact form."*
+5. Claude should run the four health-check commands, confirm clean state, then present a Session 8 plan covering the Contact form (form component + server action + Resend wiring + tests) before writing code.
+6. Per the branch-per-feature rule, the first move is to create a branch — name it `feature-contact-form` before any code changes.
 
 ---
 
 ## Files Needing Attention
 
-- `app/page.tsx` — `SectionStub` helper still used for Visit. Once
-  Visit ships, delete the helper.
 - `CLAUDE.md` (root) — still just `@AGENTS.md` import. Full project
   CLAUDE.md generated in Step 21.
 - `public/images/story.jpeg` and `public/images/hero.jpg` — leftover
   from earlier sub-commits, no longer referenced. Safe to delete or
   leave; not load-bearing.
+- `public/images/Exterior shopfront at dusk.jpeg`,
+  `Overhead pastry close-up.jpeg`,
+  `interior atmosphere.jpeg` — also unreferenced (intermediate
+  AI-generation artefacts). Same: safe to delete or leave.
 
 ---
 

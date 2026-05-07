@@ -570,6 +570,39 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
 
 ---
 
+## Session 7 — Visit section, Step 16 finished
+
+### 7.1 No embedded Google Maps iframe — outbound directions link instead
+- **Prompt says:** Under "EVERY SITE MUST INCLUDE": "Contact section:
+  address, phone, Google Maps embed placeholder, contact form."
+  CSP example in `next.config.ts` shows `frame-src 'none'` with the
+  note "if Google Maps embed is used, add https://maps.googleapis.com
+  to frame-src and script-src."
+- **What we did:** Visit section ships with no iframe at all. Address,
+  hours, and a "Get directions" button that links to
+  `https://www.google.com/maps/?q=...` with `target="_blank"` and
+  `rel="noopener noreferrer"`. CSP `frame-src 'none'` stays intact.
+- **Why:** an embedded map widget would mean (a) relaxing the CSP to
+  allow `frame-src https://www.google.com`, (b) loading Google's
+  third-party tracking inside the iframe regardless of our cookie
+  consent state, (c) measurable hit to LCP for a section most
+  visitors will scroll past or interact with via the link anyway.
+  An outbound link does the same conversion job better: tap on a
+  phone, the native Maps app opens already routing to 157 Gloucester
+  Road. No CSP cost, no consent drift, no perf hit.
+- **Phone number left out:** prompt also lists "phone" as a Visit
+  required item. Hjem's number wasn't in the in-store research.
+  Better to omit than to invent — same rule we applied to the
+  speculative menu in 6.4 / 6.6.
+- **Prompt update:** Soften the "Google Maps embed placeholder"
+  line to "Google Maps directions link OR embed (default to link
+  unless the brief specifically requires the embedded view — link
+  preserves the strict CSP and avoids loading third-party trackers
+  before consent)." Phone should be marked optional: include if
+  the business publishes one, omit rather than invent.
+
+---
+
 ## How to maintain this file
 
 - Append a new entry under the current Session header whenever you
