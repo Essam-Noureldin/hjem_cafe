@@ -658,6 +658,57 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
   relax — only worth the infrastructure cost once the site has
   real customer flow."
 
+### 7.3 Testimonials uses badge-of-trust circles instead of reviewer photos
+- **Prompt says:** Master prompt is silent on what goes inside a
+  testimonial card visually. Most stock testimonial templates
+  (including the one Essam pointed at as a visual reference) put
+  a circular profile photo of each reviewer at the top of every
+  card.
+- **What we did:** Built the redesigned testimonial cards with the
+  reference's circular-overhang structure intact, but the circle
+  shows the **trust signal** (★★★★★ for the two 5-star reviews,
+  "Critic's Pick" for The Infatuation) instead of a face.
+- **Why we did NOT lift the real reviewer photos:**
+  - **UK GDPR Article 6.** Reviewer faces are personal data.
+    Republishing photos pulled from TripAdvisor / The Infatuation
+    on Hjem's commercial site has no lawful basis (no consent, no
+    contract, no legitimate interest that overrides their rights).
+    Fines up to **£17.5M or 4% of global turnover**. Same risk
+    profile as the fake-reviews issue from 7.2.
+  - **TripAdvisor and The Infatuation TOS** both prohibit
+    scraping their content, including user-submitted images.
+  - **Two of three reviewers are anonymous handles anyway** —
+    Karen55115 and Mrs Sarah G show generic platform avatars on
+    the source pages, not real faces. Only Oliver Feldman has a
+    published headshot, owned by The Infatuation.
+- **Why we did NOT use stock or AI-generated faces:**
+  - Putting a stock photo of a smiling man under "Karen55115" or
+    an AI-generated woman under "Mrs Sarah G" misrepresents who
+    endorsed Hjem. UK CAP/ASA rules require testimonials to be
+    authentic; the DMCC Act 2024 (same one as 7.2) treats
+    misleading endorsement claims the same way as fake reviews.
+  - "It's just a stock photo, everyone does it" is not a defence
+    once a regulator decides to look.
+- **Why the trust-signal-as-badge design is arguably stronger:**
+  - "★★★★★, ★★★★★, Critic's Pick" reads at a glance — the
+    visitor scans three quality signals before they read a single
+    word of quote.
+  - Reinforces source attribution (the source name is right under
+    the badge), which is the whole point of using real reviews
+    over invented ones.
+  - The circular overhang structure from the reference is
+    preserved — the visual rhythm is the same, only the contents
+    of the circle change.
+- **Prompt update:** Add a note under "EVERY SITE MUST INCLUDE" #5
+  (social proof): "Testimonial cards must NOT use lifted reviewer
+  photos (UK GDPR violation under Article 6, TOS-prohibited on
+  every major platform), and must NOT use stock or AI-generated
+  faces under real reviewer names (UK CAP/ASA + DMCC Act:
+  misleading endorsement). Acceptable visual hooks for testimonial
+  cards: trust signals (star ratings, 'Critic's Pick' badges),
+  source platform marks, the reviewer's initials in a coloured
+  circle, or no avatar at all."
+
 ---
 
 ## How to maintain this file

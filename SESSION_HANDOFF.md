@@ -80,6 +80,22 @@ MUST INCLUDE).
   and Visit. Section id="testimonials" but intentionally not in the
   navbar — passive proof beat, not a destination.
 
+### Testimonials redesign (visual iteration after first ship)
+- Essam pointed at a stock testimonial template (centered cards
+  with profile photos overhanging the top edge) and asked for the
+  Hjem section to match.
+- Built the visual structure faithfully — centered headline +
+  subhead, three centered cards on bg-cream over the bg-bone band,
+  decorative open-quote glyphs, author names in clay accent — but
+  pushed back on lifting reviewer photos. See deviation 7.3.
+- Replaced the photo circles with **trust-signal badges**: the
+  two TripAdvisor 5-star reviews show "★★★★★" inside a moss-on-bone
+  circle, The Infatuation card shows "Critic's Pick". Same visual
+  rhythm as the reference, no GDPR / TOS / fake-endorsement risk.
+- Branched as `redesign-testimonials-cards` (small-but-visible
+  redesign of an already-shipped section), fast-forward merged to
+  main, both branches pushed.
+
 ### Bonus discovery — owner identity confirmed
 - Same web research that surfaced the testimonial quotes also
   confirmed Hjem's owner: **Marianne Brammer**, Danish-born, opened
