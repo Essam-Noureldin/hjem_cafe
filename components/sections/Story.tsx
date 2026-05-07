@@ -24,6 +24,15 @@
  * Image fallback: each slide div carries `bg-moss/40` so a missing
  * file reads as a deliberate dark block against the section bg until
  * the file lands.
+ *
+ * Copy: as of Session 7 the prose names Marianne Brammer (Danish-born
+ * founder, opened Hjem January 2018) and identifies Gloucester Road
+ * as the second room (after the original Launceston Place site).
+ * Resolves the open question from deviation 6.5 — earlier copy used
+ * a generic "we" because the owner wasn't known. If Marianne ever
+ * reviews this and wants different framing (different tone, different
+ * level of personal attribution), the prose lives in this file in
+ * three short paragraphs — quick to swap.
  */
 
 import Image from "next/image";
@@ -95,24 +104,25 @@ export default function Story() {
 
           <div className="mt-6 space-y-4 font-body text-base leading-relaxed text-bone/85">
             <p>
-              <em>Hjem</em> means <em>home</em> in Danish. We took the word
-              because a bakery is the kind of place a neighbourhood gets
-              to know first thing in the morning — what it smells like,
-              what it sounds like, who&apos;s already on the bench at
-              half-seven. We wanted to make one of those.
+              <em>Hjem</em> means <em>home</em> in Danish. Marianne
+              Brammer — Danish-born, London-based — opened Hjem in
+              2018 because the city didn&apos;t have the kind of bakery
+              she missed: a small room you could smell from the corner,
+              a counter you knew the people behind.
             </p>
             <p>
-              The shelves don&apos;t read like a Danish textbook.
-              Stone-milled sourdough sits next to house kimchi; cardamom
-              buns share a counter with ceremonial matcha. What ties it
-              together is the same idea — long fermentations, careful
-              pulls, quiet mornings, a shorter list of things made well.
+              The shelves don&apos;t read like a textbook. Stone-milled
+              sourdough sits next to house kimchi; cardamom buns share
+              a counter with ceremonial matcha. Marianne&apos;s own
+              cardamom bun is what most regulars come for first —
+              long-fermented, hand-shaped, sugar-glazed before the
+              doors open.
             </p>
             <p>
-              We&apos;re one room on Gloucester Road, baking from before
-              light. Most of what we make is gone by lunch. What&apos;s
-              left we put in the window for the regulars who walk past on
-              the way home from school.
+              Gloucester Road is the second room. Open from 7:30 most
+              mornings, baking from before light, most of what we make
+              gone by lunch. What&apos;s left we put in the window for
+              the regulars who walk past on the way home from school.
             </p>
           </div>
         </div>
