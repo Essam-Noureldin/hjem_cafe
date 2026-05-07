@@ -180,7 +180,7 @@ export default function Hero() {
         type="button"
         onClick={scrollPrev}
         aria-label="Previous slide"
-        className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-ink/30 p-3 text-bone backdrop-blur-sm transition-colors hover:bg-ink/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone sm:left-8"
+        className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-moss p-3 text-bone transition-colors hover:bg-moss/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone sm:left-8"
       >
         <svg
           width="20"
@@ -200,7 +200,7 @@ export default function Hero() {
         type="button"
         onClick={scrollNext}
         aria-label="Next slide"
-        className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-ink/30 p-3 text-bone backdrop-blur-sm transition-colors hover:bg-ink/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone sm:right-8"
+        className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-moss p-3 text-bone transition-colors hover:bg-moss/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone sm:right-8"
       >
         <svg
           width="20"
@@ -232,8 +232,8 @@ export default function Hero() {
             tabIndex={-1}
             className={`h-2 w-2 rounded-full transition-all ${
               index === selectedIndex
-                ? "w-8 bg-bone"
-                : "bg-bone/40 hover:bg-bone/60"
+                ? "w-8 bg-moss"
+                : "bg-moss/50 hover:bg-moss/70"
             }`}
           />
         ))}

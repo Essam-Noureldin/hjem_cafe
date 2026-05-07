@@ -79,7 +79,7 @@ export default function Story() {
           autoplayDelay={6500}
           showDots
           arrowsPosition="overlay"
-          controlsTheme="light"
+          controlsTheme="moss"
         />
 
         <div>
