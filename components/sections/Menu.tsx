@@ -23,9 +23,9 @@
  *     contrast.
  *   - No autoplay — users browse menus at their own pace.
  *
- * Speculative content: items + prices are educated guesses (Spring
- * 2026 plausible UK indie-café). Disclaimer at the section foot
- * names the hedge. See Session 6 deviation 6.4.
+ * Item names + prices: synced with the printed in-store counter
+ * menu (photographed by Essam Session 6). Descriptions remain my
+ * minimal interpretation — see Session 6 deviation 6.6.
  */
 
 import Image from "next/image";
@@ -44,129 +44,154 @@ interface MenuCategory {
   items: MenuItem[];
 }
 
+/**
+ * MENU data — synced with the in-store counter menu photographed by
+ * Essam (Session 6). Three categories, names + prices verbatim from
+ * the printed menu. Descriptions are minimal-and-conservative —
+ * factual where possible (GF, Danish origin, "ask the bakers"), kept
+ * short where any embellishment would be a guess.
+ *
+ * Drinks (coffee, tea, matcha) are not listed here — the printed
+ * menu we have is bakery-only. Those return when we have a confirmed
+ * drinks menu.
+ */
 const MENU: ReadonlyArray<MenuCategory> = [
   {
-    heading: "Bakery",
-    image: "/images/menu/bakery.jpeg",
+    heading: "HJEMmade Bakery",
+    image: "/images/menu/hjemmade.jpeg",
     imageAlt:
-      "Three Danish loaves on a marble surface — sourdough, dark rye and spelt — dusted with flour.",
+      "Slice of Danish dream cake with caramel-coconut topping, a fudgy brownie, oat flapjacks and a matcha sponge top on cream linen.",
     items: [
       {
-        name: "Stone-milled sourdough",
-        price: "£5.50",
-        description: "Long-fermented, deep crust, open crumb.",
+        name: "Almond Chocolate Cake (GF)",
+        price: "£4.50",
+        description: "Gluten-free.",
       },
       {
-        name: "Rugbrød",
-        price: "£5.00",
-        description: "Dense Danish dark rye, seeded, baked daily.",
+        name: "Sugar Free Banana Bread (GF)",
+        price: "£4.50",
+        description: "No added sugar, gluten-free.",
       },
       {
-        name: "Spelt loaf",
-        price: "£6.00",
-        description: "Softer crumb, nutty, light caraway.",
+        name: "Brownie",
+        price: "£4.00",
+        description: "Dense, fudgy.",
+      },
+      {
+        name: "Danish Dream Cake",
+        price: "£4.00",
+        description: "Drømmekage — caramel and coconut topping.",
+      },
+      {
+        name: "“You know which” Cake",
+        price: "£4.00",
+        description: "Ask at the counter.",
+      },
+      {
+        name: "American Chocolate Chip Cookie",
+        price: "£4.00",
+        description: "Soft middle, crisp edge.",
+      },
+      {
+        name: "Matcha Tops (GF)",
+        price: "£4.00",
+        description: "Matcha sponge top, gluten-free.",
+      },
+      {
+        name: "Healthy Flap Jacks (GF)",
+        price: "£3.75",
+        description: "Oats, gluten-free.",
+      },
+      {
+        name: "Vegan Almond Chocolate Cranberry Cookies",
+        price: "£3.25",
+        description: "Plant-based.",
+      },
+      {
+        name: "Raspberry Bliss",
+        price: "£4.50",
+        description: "Raspberry slice.",
+      },
+      {
+        name: "Bake of the day",
+        price: "£4.50",
+        description: "Whatever's been pulled this morning — ask the bakers.",
       },
     ],
   },
   {
-    heading: "Pastries",
+    heading: "Buns & Pastries",
     image: "/images/menu/pastries.jpeg",
     imageAlt:
-      "Cardamom buns dusted with pearl sugar, a cinnamon swirl and a poppyseed pastry on cream linen.",
+      "Cardamom buns dusted with pearl sugar, a cinnamon roll and a poppyseed pastry on cream linen.",
     items: [
       {
-        name: "Kardemommebolle",
-        price: "£3.80",
-        description: "Our cardamom bun. The reason most people walk in.",
+        name: "Cardamom Bun",
+        price: "£3.90",
+        description: "Hand-shaped, sugar-glazed.",
       },
       {
-        name: "Kanelsnegle",
-        price: "£3.80",
-        description: "Cinnamon swirl, brown-butter glaze.",
+        name: "Cinnamon Roll",
+        price: "£3.90",
+        description: "Soft-set glaze.",
       },
       {
-        name: "Tebirkes",
-        price: "£3.50",
-        description: "Poppyseed pastry, marzipan core.",
+        name: "Vanilla Bun",
+        price: "£4.25",
+        description: "Vanilla-cream centre.",
       },
       {
-        name: "Spandauer",
-        price: "£3.80",
-        description: "Vanilla custard, lemon glaze.",
-      },
-    ],
-  },
-  {
-    heading: "Kitchen",
-    image: "/images/menu/kitchen.jpeg",
-    imageAlt:
-      "Open-faced smørrebrød with cured fish and dill, a jar of house kimchi, and sourdough toast with cultured butter.",
-    items: [
-      {
-        name: "Smørrebrød",
-        price: "£8.50",
-        description: "Open rye sandwich, weekly seasonal topping.",
+        name: "Savoury Buns",
+        price: "£4.25",
+        description: "Daily seasonal filling.",
       },
       {
-        name: "House kimchi",
-        price: "£4.00",
-        description: "Fermented in-house, served with sourdough.",
-      },
-      {
-        name: "Sourdough toast",
+        name: "Special Bun of the day",
         price: "£4.50",
-        description: "Cultured butter, Maldon salt.",
+        description: "Whatever the bakers are testing this week.",
+      },
+      {
+        name: "Ryebread (large)",
+        price: "£11.50",
+        description: "Danish rugbrød, full loaf.",
+      },
+      {
+        name: "Ryebread (small)",
+        price: "£6.50",
+        description: "Danish rugbrød, half loaf.",
       },
     ],
   },
   {
-    heading: "Coffee",
-    image: "/images/menu/coffee.jpeg",
+    heading: "Bread Station",
+    image: "/images/menu/bakery.jpeg",
     imageAlt:
-      "A flat white with a delicate latte-art rosette on a small ceramic saucer, espresso machine soft-focused behind.",
+      "Stone-milled sourdough loaves on a wooden bench, lightly dusted with flour.",
     items: [
       {
-        name: "Espresso",
-        price: "£2.80",
-        description: "Single origin, rotated monthly.",
-      },
-      {
-        name: "Flat white",
-        price: "£3.60",
-        description: "Whole milk or oat.",
-      },
-      {
-        name: "Filter",
+        name: "Croissant",
         price: "£3.20",
-        description: "Brewed slow, served black.",
+        description: "Slow-laminated, baked daily.",
       },
       {
-        name: "Cold brew",
-        price: "£4.00",
-        description: "Eighteen-hour steep, served over ice.",
-      },
-    ],
-  },
-  {
-    heading: "Tea & Matcha",
-    image: "/images/menu/matcha.jpeg",
-    imageAlt:
-      "Bright-green ceremonial matcha in a dark ceramic chawan, bamboo whisk resting beside it on cream linen.",
-    items: [
-      {
-        name: "Ceremonial matcha",
-        price: "£4.80",
-        description: "Whisked, served warm in a small bowl.",
+        name: "Cinnamon Roll",
+        price: "£3.90",
+        description: "Bread-station bake.",
       },
       {
-        name: "Iced matcha",
-        price: "£4.80",
-        description: "Whole milk or oat, lightly sweetened.",
+        name: "Seeded Sourdough Loaf",
+        price: "£7.50 / £3.90",
+        description: "Multi-seed. Full / half.",
       },
       {
-        name: "Loose-leaf",
-        price: "£3.20",
-        description: "Black, green, or herbal — see counter.",
+        name: "Plain Sourdough Loaf",
+        price: "£6.50 / £3.20",
+        description: "Long-fermented, stone-milled. Full / half.",
+      },
+      {
+        name: "Sourdough Baguette",
+        price: "£3.00",
+        description: "Crisp crust, open crumb.",
       },
     ],
   },
@@ -251,7 +276,8 @@ export default function Menu() {
         </div>
 
         <p className="mt-12 font-body text-xs uppercase tracking-widest text-ink/50">
-          Prices indicative. See in-store for current offering.
+          Menu indicative. Items rotate — ask the bakers for
+          today&apos;s bench.
         </p>
       </div>
     </section>

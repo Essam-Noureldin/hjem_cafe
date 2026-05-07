@@ -483,6 +483,33 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
   single `MENU` const at the top of the component so a real-data swap
   is one edit, not a refactor."
 
+### 6.6 Menu data synced with the real counter menu (mid-Session 6)
+- **Prompt says:** Step 16 Menu spec implies you confirm real menu
+  data with the client before shipping; deviation 6.4 logged a
+  speculative-prices hedge for the gap before that confirmation.
+- **What we did:** Mid-session, Essam photographed the in-store
+  counter menu and shared it. We updated `components/sections/Menu.tsx`
+  to mirror it: three real categories (HJEMmade Bakery, Buns &
+  Pastries, Bread Station), 23 real items, real prices verbatim
+  including dual full/half pricing for the sourdough loaves
+  (£7.50/£3.90 seeded; £6.50/£3.20 plain). Categories that aren't
+  on the photographed menu (Coffee, Tea & Matcha, Kitchen) were
+  removed for now — the photographed menu is bakery-only; drinks
+  live on a separate menu we don't yet have.
+- **Why:** Real prices and real names are always better than
+  plausible ones once the client supplies them. Keeping the
+  speculative versions after the real menu lands would be
+  embarrassing on the demo pitch.
+- **Carry-over speculation:** descriptions are still my interpretation
+  (factual where I'm confident — GF labels, Danish names; minimal
+  where I'd be embellishing). The "Menu indicative — items rotate"
+  disclaimer at the section foot acknowledges this.
+- **Prompt update:** Add to Step 16 — "If the client supplies real
+  menu data partway through the build, sync immediately and log the
+  deviation. Real names and prices are non-negotiable once known.
+  Descriptions can remain interpretive but should be conservative —
+  GF tags, language origin, common-knowledge bakery descriptors only."
+
 ### 6.5 Story copy uses generic "we" framing, no invented founders
 - **Prompt says:** Step 16 Story spec implies real owner copy — names,
   history, the personal narrative behind the bakery.
