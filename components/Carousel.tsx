@@ -74,9 +74,11 @@ interface CarouselProps {
    *  e.g. `arrowsPosition='overlay'` + `dotsPosition='below'` for card
    *  carousels where you want arrows on the cards but dots below. */
   dotsPosition?: "overlay" | "below";
-  /** Colour of arrows + dots. 'light' = bone (for dark slides);
-   *  'dark' = ink (for light slides). Default 'light'. */
-  controlsTheme?: "light" | "dark";
+  /** Colour of arrows + dots. 'light' = bone-on-ink (for dark slides);
+   *  'dark' = ink-on-bone (for light slides); 'moss' = moss-green
+   *  filled buttons (for light cards where you want the arrows to read
+   *  clearly without going fully neutral). Default 'light'. */
+  controlsTheme?: "light" | "dark" | "moss";
   /** Whether the carousel loops past the last slide. Default true. */
   loop?: boolean;
   /** Slide-to-slide gap as a Tailwind class (e.g. "gap-4"). Default
@@ -119,8 +121,36 @@ export default function Carousel({
     };
   }, [emblaApi]);
 
-  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+  /**
+   * scrollPrev / scrollNext — manual cycling at the edges.
+   *
+   * Embla's `loop: true` silently disables itself when the slide count
+   * is below `slidesInView × 2` (3 menu cards or 4 bench cards on
+   * desktop trip this). When that happens, scrollNext at the last
+   * slide does nothing — the user clicks the arrow and the carousel
+   * appears frozen.
+   *
+   * The fallback: if embla says we can't scroll further, jump to the
+   * other end. Click-next-at-end → first slide; click-prev-at-start
+   * → last slide. That gives the cycling behaviour visitors expect
+   * from "click the arrow" without depending on embla's loop quirks.
+   */
+  const scrollPrev = useCallback(() => {
+    if (!emblaApi) return;
+    if (emblaApi.canScrollPrev()) {
+      emblaApi.scrollPrev();
+    } else {
+      emblaApi.scrollTo(emblaApi.scrollSnapList().length - 1);
+    }
+  }, [emblaApi]);
+  const scrollNext = useCallback(() => {
+    if (!emblaApi) return;
+    if (emblaApi.canScrollNext()) {
+      emblaApi.scrollNext();
+    } else {
+      emblaApi.scrollTo(0);
+    }
+  }, [emblaApi]);
   const scrollTo = useCallback(
     (i: number) => emblaApi?.scrollTo(i),
     [emblaApi],
@@ -129,13 +159,22 @@ export default function Carousel({
   const arrowBg =
     controlsTheme === "light"
       ? "bg-ink/30 text-bone hover:bg-ink/60 focus-visible:outline-bone"
-      : "bg-bone/70 text-ink hover:bg-bone focus-visible:outline-ink";
+      : controlsTheme === "moss"
+        ? "bg-moss text-bone hover:bg-moss/90 focus-visible:outline-bone"
+        : "bg-bone/70 text-ink hover:bg-bone focus-visible:outline-ink";
 
-  const dotActive = controlsTheme === "light" ? "bg-bone" : "bg-ink";
+  const dotActive =
+    controlsTheme === "light"
+      ? "bg-bone"
+      : controlsTheme === "moss"
+        ? "bg-moss"
+        : "bg-ink";
   const dotInactive =
     controlsTheme === "light"
       ? "bg-bone/40 hover:bg-bone/60"
-      : "bg-ink/30 hover:bg-ink/50";
+      : controlsTheme === "moss"
+        ? "bg-moss/30 hover:bg-moss/50"
+        : "bg-ink/30 hover:bg-ink/50";
 
   // Children-rendered: array of pre-built slide nodes wrapped in the
   // embla slide container. Children API would be cleaner but slides

@@ -126,7 +126,7 @@ export default function TodaysBench() {
             gapClassName="gap-5"
             arrowsPosition="overlay"
             dotsPosition="below"
-            controlsTheme="dark"
+            controlsTheme="moss"
             showDots
             autoplay={false}
             loop

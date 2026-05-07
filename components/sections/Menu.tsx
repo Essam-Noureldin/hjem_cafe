@@ -268,7 +268,7 @@ export default function Menu() {
             gapClassName="gap-5"
             arrowsPosition="overlay"
             dotsPosition="below"
-            controlsTheme="dark"
+            controlsTheme="moss"
             showDots
             autoplay={false}
             loop
