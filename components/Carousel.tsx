@@ -79,12 +79,32 @@ interface CarouselProps {
    *  filled buttons (for light cards where you want the arrows to read
    *  clearly without going fully neutral). Default 'light'. */
   controlsTheme?: "light" | "dark" | "moss";
-  /** Whether the carousel loops past the last slide. Default true. */
+  /** Whether the carousel loops past the last slide. Default true.
+   *  Forced to false when `arrowsHideAtEdges` is true (the directional-
+   *  arrow pattern needs hard bounds for canScroll to mean anything). */
   loop?: boolean;
   /** Slide-to-slide gap as a Tailwind class (e.g. "gap-4"). Default
    *  none — track carousels usually want this; spotlight carousels
    *  rarely do. */
   gapClassName?: string;
+  /**
+   * Hide the prev arrow when there's nothing to scroll back to, and
+   * hide the next arrow when there's nothing to scroll forward to.
+   * Default false (both arrows always render, with cycling fallback
+   * at the edges).
+   *
+   * Use this on card carousels where always-on overlay arrows cover
+   * meaningful content (e.g. Menu — the left arrow on the first slide
+   * sits over readable menu items the user can't currently navigate
+   * away from).
+   *
+   * Implies `loop: false` internally — the cycling fallback is
+   * suppressed because canScroll has to reflect real bounds for the
+   * visibility logic to mean anything. The arrows that remain visible
+   * still always work; the ones that hide hide because there's
+   * literally nowhere to go in that direction.
+   */
+  arrowsHideAtEdges?: boolean;
 }
 
 export default function Carousel({
@@ -100,16 +120,28 @@ export default function Carousel({
   controlsTheme = "light",
   loop = true,
   gapClassName,
+  arrowsHideAtEdges = false,
 }: CarouselProps) {
   // Default dots to follow arrows position unless overridden.
   const effectiveDotsPosition =
     dotsPosition ?? (arrowsPosition === "overlay" ? "overlay" : "below");
 
+  // arrowsHideAtEdges only makes sense without looping — see prop doc.
+  const effectiveLoop = arrowsHideAtEdges ? false : loop;
+
   const plugins = autoplay
     ? [Autoplay({ delay: autoplayDelay, stopOnInteraction: false })]
     : [];
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop, align: "start" }, plugins);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: effectiveLoop, align: "start" },
+    plugins,
+  );
   const [selectedIndex, setSelectedIndex] = useState(0);
+  // Track edge state for directional-arrow visibility. Only consulted
+  // when `arrowsHideAtEdges` is true — otherwise the arrows are always
+  // rendered and the cycling fallback handles edges.
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
   /**
    * scrollSnaps mirrors embla's scrollSnapList — one entry per snap
    * position. This is NOT the same as slides.length: when multiple
@@ -122,8 +154,16 @@ export default function Carousel({
 
   useEffect(() => {
     if (!emblaApi) return;
-    const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
-    const onReInit = () => setScrollSnaps(emblaApi.scrollSnapList());
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+      setCanScrollPrev(emblaApi.canScrollPrev());
+      setCanScrollNext(emblaApi.canScrollNext());
+    };
+    const onReInit = () => {
+      setScrollSnaps(emblaApi.scrollSnapList());
+      setCanScrollPrev(emblaApi.canScrollPrev());
+      setCanScrollNext(emblaApi.canScrollNext());
+    };
     onSelect();
     onReInit();
     emblaApi.on("select", onSelect);
@@ -217,15 +257,25 @@ export default function Carousel({
 
       {showArrows && (
         <>
+          {/* Prev / next arrows. When arrowsHideAtEdges is on, the
+              arrow whose direction has nothing to scroll to gets
+              `invisible pointer-events-none` (Tailwind's
+              visibility:hidden). visibility:hidden removes the element
+              from the accessibility tree AND from the focus order in
+              real browsers, so we don't need a separate aria-hidden /
+              tabIndex toggle. Crucially it keeps the element queryable
+              by getByRole in jsdom (where computed style isn't
+              evaluated), so the existing accessible-name tests still
+              pass. */}
           <button
             type="button"
             onClick={scrollPrev}
             aria-label="Previous slide"
-            className={
+            className={`${
               arrowsPosition === "overlay"
                 ? `absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full p-3 backdrop-blur-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:left-8 ${arrowBg}`
                 : `absolute -left-4 top-1/2 z-20 -translate-y-1/2 rounded-full p-3 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:-left-12 ${arrowBg}`
-            }
+            } ${arrowsHideAtEdges && !canScrollPrev ? "invisible pointer-events-none" : ""}`}
           >
             <Chevron direction="left" />
           </button>
@@ -233,11 +283,11 @@ export default function Carousel({
             type="button"
             onClick={scrollNext}
             aria-label="Next slide"
-            className={
+            className={`${
               arrowsPosition === "overlay"
                 ? `absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full p-3 backdrop-blur-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:right-8 ${arrowBg}`
                 : `absolute -right-4 top-1/2 z-20 -translate-y-1/2 rounded-full p-3 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:-right-12 ${arrowBg}`
-            }
+            } ${arrowsHideAtEdges && !canScrollNext ? "invisible pointer-events-none" : ""}`}
           >
             <Chevron direction="right" />
           </button>

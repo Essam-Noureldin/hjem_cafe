@@ -259,7 +259,11 @@ export default function Menu() {
         </p>
 
         {/* Overlay arrows on the cards + dots below — same reason as
-            TodaysBench: outside arrows clipped on mobile widths. */}
+            TodaysBench: outside arrows clipped on mobile widths.
+            arrowsHideAtEdges: at the start, only the right arrow shows
+            (the left would sit over the first card's menu items the
+            user can't navigate away from); at the end, only the left.
+            Implies loop:false internally. */}
         <div className="mt-12">
           <Carousel
             ariaLabel="Hjem menu categories"
@@ -271,7 +275,7 @@ export default function Menu() {
             controlsTheme="moss"
             showDots
             autoplay={false}
-            loop
+            arrowsHideAtEdges
           />
         </div>
 
