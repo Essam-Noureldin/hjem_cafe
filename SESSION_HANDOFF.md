@@ -191,6 +191,11 @@ After Step 17:
 - â Hjem owner identity confirmed: **Marianne Brammer**, Danish-
   born, opened Jan 2018. Cardamom bun recipe is hers. (Story copy
   rewrite queued as separate `feature-story-owner-update` branch.)
+- â Security audit done end-to-end (deviation 7.4). Code-side
+  hardening added: COOP, CORP, browsing-topics opt-out. CSP
+  `report-to` deferred to Step 18. Environment-side gaps (DNS,
+  GitHub repo settings) documented in the new "Manual security
+  actions outside the repo" section above.
 
 ### Carried over from Session 6 (still open)
 - **Drinks menu unknown.** Counter menu Essam photographed is
@@ -261,6 +266,49 @@ After Step 17:
 4. `tests/smoke/render.test.tsx` (Step 20)
 5. `tests/smoke/navigation.test.tsx` (Step 20)
 6. `tests/smoke/accessibility.test.tsx` (Step 20)
+
+---
+
+## Manual security actions outside the repo
+
+Application-layer security is solid (deviation 7.4 audit). What
+remains is **outside-the-app surface** that no amount of code can
+fix. None of these are blocking — but they all take ~30 minutes
+total to knock out and significantly raise the effective security
+posture beyond what application code alone can.
+
+### Now (free, ~5 min total — do before any production deploy)
+
+| Action | Where | Why | Time |
+|---|---|---|---|
+| Enable **branch protection** on `main` | github.com → repo → Settings → Branches | Forces PR review + status checks before merge. Right now any push goes straight to main. | 1 min |
+| Enable **push protection** for secret scanning | github.com → repo → Settings → Code security | Auto-blocks commits containing detected secrets (Resend keys, etc.) at push time. | 30 sec |
+| Enable **Dependabot security alerts** + version updates | github.com → repo → Settings → Code security | Auto-PRs for vulnerable deps. The safety net `npm audit` is too manual to be. | 30 sec |
+| (Optional) Enable **required signed commits** | github.com → repo → Settings → Branches → branch protection rule | Requires GPG/SSH-signed commits — proves a commit really came from you. Worth it on shared repos; overkill on solo. | 2 min |
+
+### When the real Hjem domain is wired (DNS panel work)
+
+| Action | What it stops | Time |
+|---|---|---|
+| **CAA record** pinning Let's Encrypt (or whoever issues your cert) | Any compromised CA from issuing a valid cert for hjemkensington.com and MITM-ing your visitors | 2 min, one-time |
+| **SPF record** pointing to Resend | Your form replies landing in spam | 2 min (Resend gives you the exact record) |
+| **DKIM verification** | Same | 2 min (Resend gives you the exact records — usually three CNAMEs) |
+| **DMARC policy** at minimum `p=quarantine` (eventually `p=reject`) | Anyone spoofing the hjemkensington.com domain to phish your customers | 5 min |
+| (Optional) Subscribe to DMARC aggregate reports via dmarcian.com or similar | Visibility into who's trying to spoof your domain | 5 min, free tier |
+
+### Step 18 (Sentry — already on the roadmap)
+
+| Action | Why | Status |
+|---|---|---|
+| Wire CSP `report-to` to Sentry's CSP endpoint | Real-world attempted XSS in production gets logged centrally instead of failing silently in the browser console | TODO comment already in `next.config.ts` — implement when wiring Sentry |
+| Add `Reporting-Endpoints` response header | Required pair for the modern `report-to` directive | Same as above |
+
+### Step 22 (delivery checklist)
+
+| Action | Why |
+|---|---|
+| Add a "DNS hardening" sub-section to `DELIVERY_CHECKLIST.md` covering CAA / DMARC / SPF / DKIM | So future projects don't miss it |
+| Add a "GitHub repo hardening" sub-section covering branch protection / push protection / Dependabot | Same |
 
 ---
 

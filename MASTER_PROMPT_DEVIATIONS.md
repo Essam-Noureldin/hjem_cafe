@@ -709,6 +709,98 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
   source platform marks, the reviewer's initials in a coloured
   circle, or no avatar at all."
 
+### 7.4 Security gaps the master prompt under-weights — outside-the-app surface
+- **Prompt says:** Application-layer security is genuinely solid —
+  CSP, rate limit, honeypot, sanitisation, server-side validation,
+  env hygiene, generic errors, dependency auditing, Sentry. Most
+  freelance builds ship with half of these.
+- **What we did differently / additionally during this session:**
+  Audited the actual hardening surface end-to-end (not just what
+  the prompt tells us to add) and found three categories of gap
+  the prompt under-weights or omits. Code-side gaps fixed on this
+  branch; environment-side gaps documented in
+  `SESSION_HANDOFF.md` under "Manual security actions outside the
+  repo" so Essam can knock them out at deploy time.
+- **Code-side gaps (FIXED on this branch):**
+  - **`Cross-Origin-Opener-Policy: same-origin`** — isolates the
+    site's browsing context group from windows it opens. Defends
+    against Spectre-class side-channel timing attacks plus closes
+    a residual tab-nabbing vector beyond `rel="noopener"`.
+  - **`Cross-Origin-Resource-Policy: same-origin`** — prevents
+    other sites from loading our resources cross-origin. Stops
+    content theft (hot-linking) and closes the cross-origin read
+    side of Spectre.
+  - **`browsing-topics=()` in Permissions-Policy** — modern
+    Chrome Topics API opt-out. Master prompt's
+    `interest-cohort=()` only covers the now-dead FLoC; Topics is
+    its successor and needs its own opt-out.
+  - **CSP `report-to` directive** — TODO comment added,
+    deferred to Step 18 (Sentry) for the actual reporting
+    endpoint. Without a real ingest destination the directive is
+    noise; with it, real-world attempted XSS in production gets
+    logged centrally instead of failing silently in the browser
+    console.
+- **Code-side things the prompt got right that I initially
+  doubted:**
+  - **Resend in `connect-src`** — I flagged this as a possible
+    over-permissive CSP entry. False alarm: Resend is correctly
+    NOT in `connect-src` because it's called server-side from the
+    Next.js server action; only browser-initiated fetches go
+    through CSP `connect-src`. The master prompt got this right
+    by not listing Resend at all in the CSP. No change needed.
+  - **No `X-XSS-Protection` header** — modern advice is to NOT
+    include this header (it can introduce vulnerabilities in
+    older browsers via the auditor). The master prompt's omission
+    is correct, not an oversight.
+  - **Source maps in production** — Next.js defaults to
+    `productionBrowserSourceMaps: false`. Master prompt doesn't
+    explicitly address this but takes the secure default.
+- **Environment-side gaps (NOT in code; documented in
+  SESSION_HANDOFF.md):**
+  - **DMARC, SPF, DKIM** on the sending domain — Resend gives
+    you SPF/DKIM records but doesn't push DMARC. Without DMARC,
+    anyone can spoof the domain to phish customers. Without
+    SPF/DKIM, contact-form replies land in spam.
+  - **CAA DNS record** — pins which Certificate Authorities can
+    issue HTTPS certs for the domain. Without it, any compromised
+    CA can issue a valid cert and MITM visitors.
+  - **GitHub branch protection on `main`** — currently anyone
+    with push rights (which is just Essam, but still) can push
+    directly to main. Branch protection forces a PR + status
+    check checkpoint.
+  - **GitHub push protection** — auto-blocks commits with
+    detected secrets at push time. Free, 30 seconds to enable.
+  - **Dependabot security alerts** — auto-PRs for vulnerable
+    deps. The safety net `npm audit` is too manual to be.
+- **Environment-side things the master prompt missed entirely:**
+  The prompt has a great pre-launch security checklist but it's
+  all application-layer (form security, CSP, headers). It has no
+  "DNS / GitHub / email-domain" section. For a small freelance
+  build that's a real omission — these take 30 minutes total once
+  the real domain is wired but they significantly raise the
+  effective security posture beyond what the application code
+  alone can.
+- **Things that are industry-standard but overkill for a brochure
+  build (intentionally not added):** Cloudflare in front of
+  Vercel, WAF, SRI hashes on third-party scripts, CSP `'nonce-*'`
+  for inline scripts, distroless containers, image signing,
+  centralised logging beyond Sentry, penetration testing,
+  CodeQL/SAST in CI, bug bounty. These are real practices on
+  serious applications. For Hjem they'd be theatre.
+- **Prompt update:** Add three items to the master prompt:
+  1. **Extend the security headers section** with COOP, CORP,
+     and `browsing-topics=()` as default-on. Note that
+     `interest-cohort=()` covers dead FLoC but not live Topics.
+  2. **Add a "DNS hardening" section** to the deployment guide
+     covering CAA, DMARC, SPF, DKIM. Mark CAA as one-time and the
+     email records as a Resend setup checklist item.
+  3. **Add a "GitHub repo hardening" section** with branch
+     protection, push protection, and Dependabot as required
+     pre-launch settings.
+  4. **Add CSP `report-to`** as a default directive, noting that
+     Sentry's CSP endpoint is the standard ingest destination and
+     it should be wired in the same step as Sentry itself.
+
 ---
 
 ## How to maintain this file

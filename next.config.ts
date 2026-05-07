@@ -131,6 +131,15 @@ const cspDirectives = [
   // Skipped in dev (no HTTPS) and when LOCAL_HTTP_TEST=1 (local LAN
   // testing of a production build over plain HTTP).
   ...(isDev || localHttpTest ? [] : ["upgrade-insecure-requests"]),
+
+  // TODO (Step 18 — Sentry): add `report-to csp-endpoint` and
+  // `report-uri /api/csp-report` directives once Sentry is wired so
+  // real-world CSP violations (i.e. attempted XSS in production) get
+  // logged centrally instead of failing silently in the browser
+  // console. Sentry has a CSP endpoint that accepts the standard
+  // report payload; the report-to group is configured via the
+  // `Reporting-Endpoints` response header. Out of scope until Step 18
+  // because without a real ingest destination the directive is noise.
 ];
 
 const contentSecurityPolicy = cspDirectives.join("; ");
@@ -171,8 +180,32 @@ const securityHeaders = [
   {
     // Explicitly deny browser features we don't use. If an attacker injects
     // a script, they can't trigger camera/mic/geolocation prompts either.
+    // browsing-topics=() opts out of the Topics API (Chrome's successor
+    // to FLoC); interest-cohort=() opts out of the now-dead FLoC. Both
+    // are free privacy wins.
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    value:
+      "camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()",
+  },
+  {
+    // Cross-Origin-Opener-Policy: isolates this site's browsing context
+    // group from windows it opens (or that opened it). Defends against
+    // Spectre-class side-channel timing attacks AND prevents tab-nabbing
+    // beyond what rel="noopener" alone covers. `same-origin` is the
+    // strict mode — fine because we don't intentionally communicate
+    // cross-origin via window.opener anywhere.
+    key: "Cross-Origin-Opener-Policy",
+    value: "same-origin",
+  },
+  {
+    // Cross-Origin-Resource-Policy: prevents other sites from loading
+    // our resources (images, JSON, etc.) cross-origin. Stops content
+    // theft (sites hot-linking our images and burning our bandwidth)
+    // AND closes the cross-origin read side of Spectre. `same-origin`
+    // is strict — note that it would block hot-linking of /public
+    // assets from external sites, which is intentional.
+    key: "Cross-Origin-Resource-Policy",
+    value: "same-origin",
   },
 ];
 
