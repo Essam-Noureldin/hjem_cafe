@@ -60,6 +60,26 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 
+/**
+ * Local HTTP testing mode — escape hatch for serving a real production
+ * build (`npm run build && node .next/standalone/server.js`) over plain
+ * HTTP on the LAN so we can test the production bundle from a phone on
+ * the same WiFi.
+ *
+ * What it disables: the `upgrade-insecure-requests` CSP directive only.
+ * That directive tells browsers to silently rewrite every http://
+ * sub-resource request to https:// — perfect in production (where the
+ * site is behind HTTPS), fatal locally (where there's no HTTPS server,
+ * so the CSS/JS requests get upgraded to URLs that 404, leaving the
+ * page rendering as un-styled HTML).
+ *
+ * Enable with: `$env:LOCAL_HTTP_TEST="1"` before starting the server.
+ * Default (env var unset) behaviour is unchanged — production CSP keeps
+ * the directive and stays hardened. Don't ship a real deployment with
+ * this var set.
+ */
+const localHttpTest = process.env.LOCAL_HTTP_TEST === "1";
+
 const cspDirectives = [
   // Default fallback — block anything we haven't explicitly allowed.
   "default-src 'self'",
@@ -108,7 +128,9 @@ const cspDirectives = [
   "object-src 'none'",
 
   // Force HTTPS for any embedded content (in production).
-  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+  // Skipped in dev (no HTTPS) and when LOCAL_HTTP_TEST=1 (local LAN
+  // testing of a production build over plain HTTP).
+  ...(isDev || localHttpTest ? [] : ["upgrade-insecure-requests"]),
 ];
 
 const contentSecurityPolicy = cspDirectives.join("; ");
