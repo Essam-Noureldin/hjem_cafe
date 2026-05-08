@@ -1104,6 +1104,48 @@ Step 20 — smoke tests.
 
 ---
 
+## Session 12 — Step 22 (DELIVERY_CHECKLIST.md)
+
+### 12.1 Checklist rendered as tables, not bulleted checkboxes
+- **Prompt says:** The DELIVERY CHECKLIST section uses flat bulleted
+  `□` checkbox lines, one per item, grouped under headings.
+- **What we did:** Each section is a markdown table with columns for
+  status icon (✅ / ⏳ / N/A), item, status, and notes.
+- **Why:** Three reasons. (1) Tables scan faster — at a glance you see
+  what's done vs blocked vs out-of-scope without reading every line.
+  (2) Consistency with the rest of `/docs/` (every doc uses tables for
+  multi-attribute lists per the prompt's own "Documentation Standards").
+  (3) The notes column lets each pending item carry the *reason* it's
+  pending — far more useful than an unchecked box with no context.
+- **Prompt update:** Update the DELIVERY CHECKLIST template to use the
+  same table format as the other docs. Specify the icon scheme (✅ /
+  ⏳ / N/A) so it's consistent across projects.
+
+### 12.2 Three-state model: ✅ / ⏳ / N/A (not just done/not done)
+- **Prompt says:** Implicitly binary — a box is checked or it isn't.
+- **What we did:** Introduced ⏳ (pending live deployment) as a distinct
+  state from ✗ (failed) or □ (not started). Plus N/A for items that
+  legitimately don't apply.
+- **Why:** A speculative build cannot tick boxes that require a live
+  URL — but those items aren't "failed," they're correctly deferred.
+  Marking them ⏳ with a clear reason makes the checklist truthful at
+  delivery time AND useful as a launch-day walkthrough later.
+- **Prompt update:** Add the three-state model to the DELIVERY CHECKLIST
+  spec. Specify that the launch-day section (`securityheaders.com`,
+  Lighthouse capture, contact form end-to-end) starts as ⏳ by design.
+
+### 12.3 Sign-off footer
+- **Prompt says:** Nothing about a sign-off block at the end.
+- **What we did:** Added a "Sign-off" table with builder name, date,
+  test count, coverage figures, and final status.
+- **Why:** When the checklist is shown to a client (or to future-you at
+  the start of the next project), the sign-off captures the snapshot
+  state at delivery without scrolling through every row.
+- **Prompt update:** Optional but worth adding to the template — it's
+  the natural closing punctuation for a delivery doc.
+
+---
+
 ## How to maintain this file
 
 - Append a new entry under the current Session header whenever you
