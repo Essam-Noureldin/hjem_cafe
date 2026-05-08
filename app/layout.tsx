@@ -85,9 +85,12 @@ export const metadata: Metadata = {
     description:
       "A small Danish neighbourhood bakery in West London. Stone-milled sourdough, cardamom buns, slow coffee.",
   },
+  // Speculative demo build: don't let Google index this URL with Hjem's
+  // name on it. The vercel.app URL is non-canonical — when Hjem signs
+  // and we move to their real domain, flip both back to `true`.
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
   },
 };
 
