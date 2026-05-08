@@ -1046,6 +1046,64 @@ Step 20 — smoke tests.
 
 ---
 
+## Session 11 — 2026-05-08 (Step 21 — docs)
+
+### 11.1 Docs assume jest-axe and Tailwind v4 deviations from earlier sessions
+- **Prompt says:** Docs should describe what was built per the prompt.
+- **What we did:** TESTING.md and DESIGN.md describe the *actual* setup
+  (jest-axe, Tailwind v4 CSS-first) — not the prompt's hypothetical setup
+  (`@axe-core/react`, `tailwind.config.ts`). Each carries a note pointing
+  back to the original deviation entry (10.1, 1.1).
+- **Why:** Docs that describe code that doesn't exist are worse than no
+  docs. Future-you reads docs as truth and gets misled.
+- **Prompt update:** Step 21's instruction should be "docs describe the
+  actual code, with cross-references to deviations where the actual code
+  diverges from the prompt's blueprint." Already implicit in the current
+  prompt but worth saying outright.
+
+### 11.2 No "JARGON USED IN THIS PROJECT" table on every doc — only in CLAUDE.md
+- **Prompt says (Rule 7 of teaching mode):** Maintain the jargon table
+  in `CLAUDE.md` under a section called "JARGON USED IN THIS PROJECT".
+- **What we did:** Honoured the rule — single jargon table at the bottom
+  of `docs/CLAUDE.md`. Other docs link to it rather than duplicating.
+- **Why:** No deviation per se — flagging that the prompt is correct and
+  the centralised jargon table works well. Mention here so a future
+  reviewer doesn't wonder why other docs don't have one.
+
+### 11.3 HANDOVER.md ships with placeholders, not real values
+- **Prompt says:** "Login credentials table (leave blank — fill manually
+  before sending)."
+- **What we did:** Did exactly that. Added an explicit `> ℹ️ Note (for
+  developer)` callout at the top of the file warning not to send unfilled.
+- **Why:** Pre-launch the client doesn't exist. Placeholders are correct
+  state at this phase. The callout is the safety net.
+- **Prompt update:** Wording's fine; the prompt's "leave blank" instruction
+  is unambiguous when read carefully.
+
+### 11.4 ASCII layout sketches for USER_GUIDE.md
+- **Prompt says (USER_GUIDE.md spec):** "ASCII wireframe sketches of the
+  homepage layout so the owner can see what section is what."
+- **What we did:** Drew a section-by-section ASCII layout that mirrors the
+  scroll order. Followed the prompt verbatim.
+- **Why:** Worth noting because ASCII wireframes are the kind of thing a
+  prompt could easily under-specify; the explicit instruction made the
+  output good.
+- **Prompt update:** None — the existing instruction works.
+
+### 11.5 PERFORMANCE.md targets without measured Lighthouse scores
+- **Prompt says:** "Lighthouse scores table (fill in after final run)."
+- **What we did:** Filled in target column, left actual column blank with
+  a note that Lighthouse hasn't been formally captured yet (will happen
+  pre-launch as part of Step 22).
+- **Why:** Demo build hasn't been deployed publicly. Capturing localhost
+  Lighthouse scores would mislead — they're always rosier than production.
+- **Prompt update:** PERFORMANCE.md instruction could clarify that the
+  Lighthouse capture is part of the **launch** checklist, not the doc-writing
+  pass. Right now both Step 21 (docs) and Step 22 (delivery checklist) seem
+  to share that responsibility.
+
+---
+
 ## How to maintain this file
 
 - Append a new entry under the current Session header whenever you
