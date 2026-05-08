@@ -1,5 +1,5 @@
 # Session Handoff
-**Generated:** 2026-05-08 (end of Session 12 — build complete)
+**Generated:** 2026-05-08 (end of Session 13 — first deploy)
 **Project:** Hjem Kensington — speculative demo build (UK indie cafe)
 **Operator:** Essam (solo freelancer)
 
@@ -7,121 +7,141 @@
 
 ## TL;DR for the next session
 
-- **All 22 build-order steps are done.** The speculative build is complete.
-  `DELIVERY_CHECKLIST.md` lives at the project root.
-- Site behaviour unchanged from Session 11. Visitors see no difference.
-- **227 / 227 tests still passing.** Coverage well above gates. tsc clean.
-  ESLint clean.
-- Branch `feature-delivery-checklist` was merged fast-forward into `main`
-  and both pushed to GitHub.
-- **Next session: this build is shippable.** The pitch conversation is
-  outside the build scope. If a real client engagement starts, walk the
-  ⏳ rows in `DELIVERY_CHECKLIST.md` top to bottom on launch day.
+- **The speculative build is now LIVE** at
+  [https://hjem-kensington.vercel.app](https://hjem-kensington.vercel.app).
+  Deployed via Vercel + GitHub auto-deploy (every push to `main` redeploys).
+- `noindex,nofollow` set on root layout — Google won't index this URL with
+  Hjem's name on it. Flip back to `index: true, follow: true` on real
+  launch day after the production domain is pointed at Vercel.
+- All 7 required env vars set in Vercel for Production + Preview.
+  Resend live key in place, `CONTACT_FORM_FROM_EMAIL=onboarding@resend.dev`
+  (Resend's free no-domain sender).
+- GA + Sentry dormant by design (empty env vars) — flip on at real launch.
+- 227 / 227 tests still passing. Coverage well above gates. tsc + ESLint clean.
+- Two branches merged this session: `feature-vercel-prep` (noindex change)
+  and `feature-post-deploy-docs` (this update).
+- **Outreach is the next move.** Email + DM scripts already drafted in the
+  prior chat. Pre-send checklist still has open items (founder name, OG
+  image, etc.) — see "Open items" below.
 
 ---
 
-## What was built in Session 12
+## What was built/changed in Session 13
 
 ### Plain English
 
-One file, at the project root: `DELIVERY_CHECKLIST.md`. Each gate from
-the master prompt's DELIVERY CHECKLIST section is rendered as a table row
-with one of three statuses:
-
-- **✅** — verified at delivery time
-- **⏳** — pending live deployment (with a clear reason in the notes column)
-- **N/A** — does not apply (with reason)
-
-The six sections track the master prompt verbatim:
-
-1. Code & Config
-2. Site Completeness
-3. Security
-4. Testing & Quality
-5. Documentation (every `/docs/` file linked)
-6. Pre-Launch (every box ⏳ by design — only tickable post-deploy)
-
-A 🚨 Critical sub-section calls out the non-negotiable solicitor review
-of the legal pages and the HANDOVER.md credentials fill.
+The site went from "code on GitHub" to "real public URL Hjem can click on."
+Two code-touching commits, plus this doc refresh.
 
 ### What changed in the repo
 
-| File | What it does |
+| File | What changed |
 |---|---|
-| `DELIVERY_CHECKLIST.md` (new, project root) | Final delivery gate — speculative-build-aware, table-formatted, ✅/⏳/N/A scheme |
-| `MASTER_PROMPT_DEVIATIONS.md` (modified) | +3 entries for Session 12 (12.1–12.3) |
-| `SESSION_HANDOFF.md` (modified — this file) | Closes out the build |
+| `app/layout.tsx` | `metadata.robots` flipped to `{ index: false, follow: false }` for the speculative deploy. Comment in code explains the flip-back trigger. |
+| `DELIVERY_CHECKLIST.md` | Vercel-env-vars row flipped to ✅. Pre-launch section restructured: GA + Sentry rows marked N/A on the demo (vars deliberately empty); other rows annotated "tickable now on live URL." Sign-off footer adds the demo URL. |
+| `SESSION_HANDOFF.md` (this file) | Refreshed end-to-end for end of Session 13. |
 
 ### Decisions worth remembering
 
-- **Three-state checklist (✅ / ⏳ / N/A) instead of done/not-done.** A
-  speculative build cannot honestly tick boxes that require a live URL.
-  ⏳ with a reason is more truthful AND turns the checklist into a
-  launch-day walkthrough later. Logged as deviation 12.2.
-- **Tables, not bullet checkboxes.** Faster to scan, consistent with
-  every other doc in `/docs/`, and the notes column carries the *why*
-  for each pending item. Logged as deviation 12.1.
-- **Sign-off footer at the bottom.** Snapshot of builder, date, test
-  count, coverage. Captures the delivery state without scrolling.
-  Logged as deviation 12.3.
-- **No source files touched.** Pure markdown — same reason `npm run
-  build` was skipped. The pre-push hook still ran the full suite.
+- **GitHub auto-deploy via Vercel dashboard, NOT CLI.** Cleaner workflow:
+  every push to `main` triggers a production deploy automatically; every
+  feature branch gets a free preview URL. No `vercel deploy` commands
+  needed for the rest of the project's life.
+- **Resend's `onboarding@resend.dev` no-domain sender for the demo.**
+  Skipped the "Add domain" path because (a) Hjem owns the real domain,
+  not us, and (b) DNS verification is overhead unnecessary for a demo.
+  When Hjem signs and the real domain is pointed at Vercel, *then* add
+  a Resend domain and switch `CONTACT_FORM_FROM_EMAIL` to
+  `hello@hjemkensington.com` or similar.
+- **Project name on Vercel: `hjem-kensington`, not `hjem-cafe`.** Renamed
+  during the import flow so the URL reads as the actual brand name.
+  Repo on GitHub remains `hjem_cafe`; only the Vercel project name
+  matches the brand.
+- **GA + Sentry intentionally dormant on the demo.** No `NEXT_PUBLIC_GA_ID`,
+  no `NEXT_PUBLIC_SENTRY_DSN`. The flows are wired and tested but no
+  external services are reached on the demo. Fewer moving parts to break;
+  no privacy implications for the cookie banner test.
 
 ---
 
 ## Test status
 
-- **227 tests passing** across 25 suites (no change from end of Session 11).
+- **227 tests passing** across 25 suites (no change since end of Session 11).
 - Coverage: 94.83% statements / 89.56% branches / 89.87% functions / 96.40% lines.
 - Last full suite run: PASSED.
 - TSC clean. ESLint clean.
-- Pre-push hook ran the full suite during push.
+- Pre-push hook ran the full suite during both pushes this session.
 
 ---
 
-## Known issues / open items
+## Vercel reference (so future sessions don't have to re-derive)
 
-### New for Session 12
+| | |
+|---|---|
+| Project name | `hjem-kensington` |
+| Production URL | https://hjem-kensington.vercel.app |
+| Linked repo | `Essam-Noureldin/hjem_cafe` (branch `main`) |
+| Auto-deploy | On every push to `main` |
+| Preview deploys | On every feature branch push |
+| Env vars set | `NEXT_PUBLIC_SITE_URL`, `CONTACT_FORM_TO_EMAIL`, `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS`, `COOKIE_CONSENT_REQUIRED`, `RESEND_API_KEY`, `CONTACT_FORM_FROM_EMAIL` |
+| Env vars empty (by design) | `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_SENTRY_DSN` |
+| Vercel team | `essam-noureldin's projects` (Hobby plan) |
 
-Nothing new. Markdown-only change — no source touched.
+---
 
-### Carried over (now formally tracked in DELIVERY_CHECKLIST.md ⏳ rows)
+## Open items going into the outreach phase
 
-- **GitHub Dependabot: 1 moderate** (`postcss` inside Next bundled deps).
+### Verifications still owed on the live URL
+
+- [ ] Submit the contact form on the live URL → confirm email lands in
+      `esam.noureldin@gmail.com` within 60s. **Critical** — the demo's
+      one must-work feature.
+- [ ] Visit `https://securityheaders.com` → paste the URL → capture grade
+      (target B+ or higher).
+- [ ] `https://hjem-kensington.vercel.app/sitemap.xml` returns the sitemap.
+- [ ] `https://hjem-kensington.vercel.app/robots.txt` returns the robots file.
+- [ ] Run Lighthouse against the live URL in incognito; fill the actuals
+      table in [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
+
+### Pre-outreach polish (worth doing before sending the DM)
+
+- [ ] Generate the OG image (1200×630) — affects link previews on
+      Instagram/WhatsApp/email when the URL is shared.
+- [ ] Generate the favicon set — currently the browser tab shows the
+      default Next.js icon, looks unfinished.
+- [ ] Compress avatar images from ~9 MB to ~600 KB via squoosh.app.
+- [ ] Find the founder's actual first name (Companies House, IG bio, LinkedIn)
+      to personalise the outreach scripts.
+
+### Carried over (not blocking outreach)
+
+- GitHub Dependabot moderate (`postcss` inside Next bundled deps).
   Documented in `/docs/ERRORS.md` row 14.
-- **Sentry build plugin runs `silent: true`.** Remove and set
-  `SENTRY_AUTH_TOKEN` in Vercel when source-map upload is wanted.
-- **Drinks menu unknown.** Add a Drinks card to Menu using the unused
+- Drinks menu unknown — add a Drinks card to Menu using the unused
   `coffee.jpeg` and `matcha.jpeg` once the drinks list surfaces.
-- **Hjem phone number** — left out of Visit until published.
-- **Avatar file size compression** (~9 MB → ~600 KB via squoosh.app) —
-  flagged but not blocking. Documented in `docs/IMAGES.md`.
-- **OG image not yet generated.** Spec in `docs/IMAGES.md` (1200×630).
-- **Favicon set not yet generated.** Spec in `docs/IMAGES.md`.
-- **Lighthouse scores not yet captured.** Targets in `docs/PERFORMANCE.md`,
-  actuals to be filled against the deployed Vercel preview.
-- **Solicitor review of legal pages** — non-negotiable before any public
-  launch. Reminder in `docs/LEGAL.md` and `docs/HANDOVER.md`.
+- Hjem phone number — left out of Visit until published.
+- Solicitor review of legal pages — non-negotiable before any *real* public
+  launch, but not a blocker for the speculative pitch.
 
 ---
 
-## How to resume (if a real client engagement starts)
+## How to resume next session
 
-The build itself is finished. The remaining work is launch-day execution,
-not coding. Walk the **Pre-Launch** section of `DELIVERY_CHECKLIST.md`
-top to bottom after the first Vercel production deploy succeeds:
+If continuing the outreach work:
 
-1. Set every Vercel env var (Production, Preview, Development).
-2. Deploy. Walk through every ⏳ row in `DELIVERY_CHECKLIST.md`.
-3. Brief the client to send the legal pages to a UK solicitor before
-   the public launch. **Non-negotiable.**
-4. Fill in `docs/HANDOVER.md` credentials table on launch day.
-5. Capture the Lighthouse run against the live URL and fill the actuals
-   in `docs/PERFORMANCE.md`.
+1. Run the live-URL verifications listed above.
+2. Send the first outreach DM/email (scripts in prior chat).
+3. Track responses; price-quote = £1,200 build + £80/month, 12-month min.
 
-If a fresh build session is opened anyway (e.g., to add a Drinks card
-once the menu surfaces): paste `MASTER_PROMPT.md`, paste this handoff,
-state what's being added, create a `feature-<name>` branch first.
+If a real client engagement starts later:
+
+1. Walk the ⏳ rows in `DELIVERY_CHECKLIST.md` top to bottom.
+2. Switch `metadata.robots` in `app/layout.tsx` back to `{ index: true, follow: true }`.
+3. Add their real GA4 ID and Sentry DSN to Vercel env vars; flip the
+   N/A rows in DELIVERY_CHECKLIST to verifiable.
+4. Add their real domain to Resend; update `CONTACT_FORM_FROM_EMAIL`.
+5. Brief the client to send the legal pages to a UK solicitor before
+   public launch. **Non-negotiable.**
 
 ---
 
@@ -135,10 +155,14 @@ npx jest --ci --passWithNoTests
 npm run build
 ```
 
-All four should still exit clean.
+All four should still exit clean. The deploy itself is verified by
+visiting [https://hjem-kensington.vercel.app](https://hjem-kensington.vercel.app)
+in incognito mode.
 
 ---
 
-## What's left after Session 12
+## What's left after Session 13
 
-Nothing in the build. Pitch conversation comes next — outside scope.
+- The build + deploy is done.
+- Verifications above are mechanical (15 min total).
+- Outreach is sales work, outside the build scope but critical for ROI.
