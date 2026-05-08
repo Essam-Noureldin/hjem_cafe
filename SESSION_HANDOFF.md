@@ -1,5 +1,5 @@
 # Session Handoff
-**Generated:** 2026-05-08 (end of Session 10)
+**Generated:** 2026-05-08 (end of Session 11)
 **Project:** Hjem Kensington — speculative demo build (UK indie cafe)
 **Operator:** Essam (solo freelancer)
 
@@ -7,168 +7,169 @@
 
 ## TL;DR for the next session
 
-- Steps 1–20 of the master-prompt build order are **done**. Step 19 was
-  folded into Session 9's Step 18.
-- Site still works exactly the same as it did at the end of Session 9.
-  Visitors see no difference.
-- **227 / 227 tests passing** (was 197 at end of Session 9). 30 new
-  smoke tests added. Coverage well above gates. Build clean.
-- Branch `feature-smoke-tests` was merged fast-forward into `main`
-  and both pushed to GitHub.
-- **Next session: Step 21 — generate all 15 docs in `/docs/`.**
-  This is the big one — 15 markdown files. Plan a longer session.
+- **Steps 1–21 of the master-prompt build order are done.** All 15 docs
+  exist in `/docs/`. Step 22 (DELIVERY_CHECKLIST.md at project root) is
+  the only thing left.
+- Site behaviour unchanged from Session 10. Visitors see no difference.
+- **227 / 227 tests still passing.** Coverage well above gates. tsc clean.
+  ESLint clean.
+- Branch `feature-docs` was merged fast-forward into `main` and both
+  pushed to GitHub.
+- **Next session: Step 22 — `DELIVERY_CHECKLIST.md` at the project root.**
+  Quick session — should land in 30–60 minutes.
 
 ---
 
-## What was built in Session 10
+## What was built in Session 11
 
 ### Plain English
 
-Smoke tests are now in place. The name comes from electronics — when
-an engineer plugs in a new circuit board, they watch to see if smoke
-comes out. If no smoke, it's at least not on fire. That's the bar.
+Fifteen markdown files in `/docs/`. Each has a job:
 
-For a website, three boring-but-critical questions get answered:
+1. **CLAUDE.md** — the project brain. Future Claude Code sessions read this
+   first to understand the codebase. Has the folder tree, decision log,
+   what NOT to change without asking, and the running jargon glossary.
+2. **README.md** — for any developer (or future you) cloning the repo.
+3. **ARCHITECTURE.md** — system design, the contact form flow diagram, the
+   cookie-consent flow, scaling notes.
+4. **SETUP.md** — step-by-step new-machine setup with verification checklist.
+5. **DOCKER.md** — multi-stage build explained, command reference,
+   troubleshooting decision tree.
+6. **ERRORS.md** — catalogue of every error pattern hit, decision trees for
+   "site is down" and "contact form not working", how to read Sentry/Vercel
+   logs, escalation tree.
+7. **MAINTENANCE.md** — monthly/quarterly/annual rhythm with gantt chart.
+8. **SECURITY.md** — threat model, every header explained, CSP directive
+   walkthrough, the layered contact-form defence, incident response.
+9. **LEGAL.md** — what each legal page covers, data-flow diagram, triggers
+   that need updates, the **non-negotiable solicitor review reminder**.
+10. **TESTING.md** — test philosophy, pyramid, folder structure, worked
+    example for adding a new test, common pitfalls.
+11. **IMAGES.md** — full image inventory, photographer brief template.
+12. **PERFORMANCE.md** — targets, animation rule, "Lighthouse dropped"
+    investigation tree.
+13. **DESIGN.md** — palette, type scale, spacing, component patterns,
+    animation, accessibility floor.
+14. **USER_GUIDE.md** — plain-English doc for the business owner. SEO
+    timeline, FAQ, what's in retainer vs out.
+15. **HANDOVER.md** — client-facing delivery doc with credentials table
+    (placeholders only — fill on launch day) and pre-launch checklist.
 
-1. **Does every page load without crashing?** And without quietly
-   throwing any React warnings into the browser console.
-2. **Are all the links real?** Every internal link points at a page
-   that actually exists. Every footer link goes somewhere. External
-   links carry the security attribute that prevents tab-jacking.
-3. **Is the site accessible at the floor level?** No missing alt text,
-   exactly one main heading per page, no automated accessibility
-   violations from axe (the industry-standard a11y scanner).
-
-All 30 smoke tests passed on the first run. That's not luck — it
-means the work done in Sessions 1–9 already met the bar. The smoke
-tests are now permanent regression guards: if anyone ever ships a
-broken footer link, a missing alt, or a console-warning-spamming
-component, these tests will catch it the moment it lands.
+Total: ~4,000 lines of documentation. Each doc is self-contained but
+cross-links the others where relevant. Mermaid diagrams, tables, and
+tasteful callouts throughout.
 
 ### What changed in the repo
 
 | File | What it does |
 |---|---|
-| `tests/smoke/render.test.tsx` (new) | Renders Home + the 3 legal pages. Asserts no console.error and no console.warn during render. |
-| `tests/smoke/navigation.test.tsx` (new) | Pulls every link off the assembled site (navbar + home + footer). Checks every internal link resolves to a real page, every anchor link finds its section in the DOM, every external link has `rel="noopener"`, and the footer links all three legal pages. |
-| `tests/smoke/accessibility.test.tsx` (new) | Runs axe-core via jest-axe against each page. Also pins single-h1-per-page and "every img has alt." |
-| `package.json` (modified) | Adds `jest-axe` and `@types/jest-axe` as dev dependencies. |
+| `docs/CLAUDE.md` (new) | Project brain — replaces the prompt's CLAUDE.md spec; root `CLAUDE.md` still just `@AGENTS.md` |
+| `docs/README.md` (new) | Developer setup + npm scripts + deployment |
+| `docs/ARCHITECTURE.md` (new) | System diagrams, decisions, scaling |
+| `docs/SETUP.md` (new) | New-machine guide with verification |
+| `docs/DOCKER.md` (new) | Multi-stage Dockerfile walkthrough + troubleshooting |
+| `docs/ERRORS.md` (new) | 18 error rows + decision trees |
+| `docs/MAINTENANCE.md` (new) | Monthly checklist + quarterly + annual |
+| `docs/SECURITY.md` (new) | Headers, CSP, contact-form defences |
+| `docs/LEGAL.md` (new) | Legal pages summary + solicitor review disclaimer |
+| `docs/TESTING.md` (new) | Test philosophy + how-to-add-a-test walkthrough |
+| `docs/IMAGES.md` (new) | Image inventory + photographer brief |
+| `docs/PERFORMANCE.md` (new) | Targets + animation rule + regression tree |
+| `docs/DESIGN.md` (new) | Palette, type, spacing, components, animation |
+| `docs/USER_GUIDE.md` (new) | Plain-English owner guide |
+| `docs/HANDOVER.md` (new) | Client-facing delivery doc |
+| `MASTER_PROMPT_DEVIATIONS.md` (modified) | +5 entries for Session 11 (11.1–11.5) |
 
 ### Decisions worth remembering
 
-- **Used `jest-axe`, not `@axe-core/react`.** The master prompt named
-  the latter, but `@axe-core/react` is a runtime browser logger that
-  prints warnings to the console. It doesn't expose Jest assertions.
-  `jest-axe` is the proper Jest matcher integration. Logged as a
-  deviation; the master prompt should be updated for future projects.
-- **Disabled axe's `region` rule.** It complains when content sits
-  outside a landmark (`<main>`, `<nav>`, etc.). The pages already use
-  landmarks correctly; the only thing that fires the rule is the
-  footer's "© year" sub-bar — wrapping it in another landmark just
-  to satisfy the rule would add noise without an a11y benefit.
-- **All 30 smoke tests passed first try.** The literal "see test
-  fail, then write code to make it pass" cycle didn't apply this
-  session because the implementation already exists from Sessions 1–9.
-  Smoke tests here are characterization tests over working code.
-  They'll fail meaningfully when something regresses in the future.
+- **Five commits, one per batch** — keeps the history readable: batch 1
+  (CLAUDE/README/ARCHITECTURE/SETUP), batch 2 (ops trio: DOCKER/ERRORS/
+  MAINTENANCE), batch 3 (SECURITY/LEGAL/TESTING), batch 4 (IMAGES/
+  PERFORMANCE/DESIGN), batch 5 (USER_GUIDE/HANDOVER + deviations).
+- **HANDOVER.md ships pre-launch with placeholders, by design.** Has an
+  explicit `> ℹ️ Note (for developer)` callout at the top warning not to
+  send unfilled. Filled at launch day with real credentials, real URL.
+- **PERFORMANCE.md targets but no measured Lighthouse scores yet.** Demo
+  hasn't been deployed publicly. Capturing localhost scores would mislead.
+  Lighthouse capture deferred to launch (Step 22 territory).
+- **TESTING.md and DESIGN.md cross-reference earlier deviations** (10.1
+  for jest-axe, 1.1 for Tailwind v4) so docs describe the *actual* code.
+- **Single jargon table in CLAUDE.md.** Other docs link to it rather than
+  duplicating — kept as the prompt's Rule 7 specifies.
 
 ---
 
 ## Test status
 
-- **227 tests passing** across 25 suites (was 197 / 22 at end of Session 9).
-- Coverage: **94.83% statements, 89.56% branches, 89.87% functions, 96.40% lines**.
-  All four gates (80%) met comfortably.
-- Last full suite run: PASSED (≈14s).
-- Last `next build`: PASSED (sitemap regenerated, no warnings).
+- **227 tests passing** across 25 suites (no change from end of Session 10).
+- Coverage: 94.83% statements / 89.56% branches / 89.87% functions / 96.40% lines.
+- Last full suite run: PASSED (~12s pre-commit, ~19s on each pre-push).
+- TSC clean. ESLint clean.
 - Pre-push hook ran the full suite twice during push (once per branch).
-
-### New test files this session
-
-- `tests/smoke/render.test.tsx` — 12 tests
-- `tests/smoke/navigation.test.tsx` — 6 tests
-- `tests/smoke/accessibility.test.tsx` — 12 tests
 
 ---
 
 ## Known issues / open items
 
-### New for Session 10
+### New for Session 11
 
-Nothing new. `jest-axe` did not introduce any new vulnerabilities — the
-GitHub Dependabot alert is still the same single moderate-severity
-`postcss` issue inside Next.js's bundled dependencies.
+Nothing new. Doc-only changes — no source touched.
 
-### Carried over from earlier sessions
+### Carried over
 
-- **GitHub Dependabot: 1 moderate** (`postcss` inside Next.js's
-  bundled deps). Same one Session 7 flagged. Master prompt's audit
-  gate is "high or critical only," so this doesn't block anything.
-  Document in `/docs/ERRORS.md` during Step 21.
-- **Sentry build plugin runs `silent: true`.** When you want to start
-  uploading source maps in production, remove that and set
-  `SENTRY_AUTH_TOKEN` in Vercel.
-- **Drinks menu unknown.** When the drinks list surfaces, add a
-  Drinks card back to the Menu carousel using the unused `coffee.jpeg`
-  and `matcha.jpeg` already in `/public/images/menu/`.
-- **No CLAUDE.md or ERRORS.md yet** — generated in Step 21. Root
-  `CLAUDE.md` is still just `@AGENTS.md`.
+- **GitHub Dependabot: 1 moderate** (`postcss` inside Next bundled deps).
+  Same one Sessions 7–10 flagged. Master prompt's gate is "high or
+  critical only" so doesn't block. Documented in `/docs/ERRORS.md` row 14.
+- **Sentry build plugin runs `silent: true`.** When you want source-map
+  upload, remove that and set `SENTRY_AUTH_TOKEN` in Vercel.
+- **Drinks menu unknown.** When the drinks list surfaces, add a Drinks
+  card to Menu using the unused `coffee.jpeg` and `matcha.jpeg`.
 - **Hjem phone number** — left out of Visit until published.
 - **Avatar file size compression** (~9MB → ~600KB via squoosh.app) —
-  flagged but not blocking.
+  flagged but not blocking. Now formally documented in `docs/IMAGES.md`.
 - **Sitemap regeneration** — use `npm run build` (fires `postbuild`),
-  not `npx next build`.
-- **Standalone production server testing on phone** — see Session 7
-  notes for the `LOCAL_HTTP_TEST=1` workflow.
+  not `npx next build`. Documented in `docs/README.md`.
+- **OG image not yet generated.** Documented in `docs/IMAGES.md` with
+  spec (1200×630). Required for social previews.
+- **Favicon set not yet generated.** Documented in `docs/IMAGES.md` with
+  spec. Use realfavicongenerator.net from a 1024×1024 source.
+- **Lighthouse scores not yet captured.** Targets in `docs/PERFORMANCE.md`,
+  actuals to be filled in pre-launch (Step 22).
+- **Solicitor review of legal pages** — reminder in `docs/LEGAL.md` and
+  `docs/HANDOVER.md`. Non-negotiable before any public launch.
 
 ---
 
-## How to resume (Step 21 — docs)
+## How to resume (Step 22 — DELIVERY_CHECKLIST.md)
 
-Step 21 is the documentation pass. Master prompt asks for **15
-markdown files in `/docs/`**:
+Step 22 is the project root checklist. Master prompt has the structure
+already laid out (`MASTER_PROMPT.md` → "DELIVERY CHECKLIST" section).
+This is essentially a transcription job:
 
-1. CLAUDE.md (project brain for future Claude Code sessions)
-2. README.md (developer setup)
-3. ARCHITECTURE.md (system design)
-4. DESIGN.md (colours, fonts, patterns)
-5. SETUP.md (new-machine setup guide)
-6. ERRORS.md (error catalogue + decision trees)
-7. SECURITY.md (security measures explained)
-8. LEGAL.md (legal page summary + solicitor disclaimer)
-9. DOCKER.md (Docker commands and troubleshooting)
-10. IMAGES.md (every image needed with specs)
-11. MAINTENANCE.md (monthly checklist)
-12. USER_GUIDE.md (plain English guide for the business owner)
-13. PERFORMANCE.md (Lighthouse scores + Core Web Vitals)
-14. HANDOVER.md (client-facing delivery doc)
-15. TESTING.md (test philosophy + how to add new tests)
+1. Code & Config (env vars, Docker, configs, security headers, etc.)
+2. Site Completeness (all sections, cookie banner, OG tags, legal trio)
+3. Security (honeypot, rate limit, sanitization, no secrets, no console.log)
+4. Testing & Quality (jest, MSW, husky, all test categories, coverage,
+   tsc, eslint, Lighthouse, mobile)
+5. Documentation (every file in `/docs/` exists — already true)
+6. Pre-Launch (securityheaders.com check, contact form end-to-end,
+   GA gating, sitemap, robots.txt, solicitor reminder)
 
-This is a long session. Plan for it. Recommended order:
+Most boxes will tick `✓` immediately. The pre-launch boxes ("submit form
+on live URL", "validate at securityheaders.com") only tick when actually
+deployed — leave those open with a note.
 
-1. CLAUDE.md first (it's the project brain — every future session
-   reads it on load).
-2. Then the developer-facing trio: README, ARCHITECTURE, SETUP.
-3. Then the operations trio: DOCKER, ERRORS, MAINTENANCE.
-4. Then the security/legal trio: SECURITY, LEGAL, TESTING.
-5. Then the assets/perf pair: IMAGES, PERFORMANCE.
-6. Then the design doc: DESIGN.
-7. Finally the client-facing pair: USER_GUIDE, HANDOVER.
-
-### Before writing any docs
+### Before writing the checklist
 
 1. Open Claude Code in `c:\Users\noure\Desktop\apps_websites\websites\`.
 2. Paste **MASTER_PROMPT.md** at session start.
 3. Paste **this SESSION_HANDOFF.md**.
-4. State: *"Resuming Hjem Kensington from Step 21 — generating all 15
-   docs. Plain English explanations throughout, branch-per-feature,
-   test-first all still apply."*
-5. Claude should run the four health-check commands, confirm clean
-   state, then walk through the Session 11 plan in plain English
-   before writing any docs.
-6. Per branch-per-feature, the first move is to create a branch named
-   `feature-docs` (or `feature-docs-batch-1` if splitting across
-   sessions) before any file changes.
+4. State: *"Resuming Hjem Kensington from Step 22 — generating
+   DELIVERY_CHECKLIST.md at project root. Speculative build, so the
+   pre-launch boxes that require a live URL stay unchecked with notes."*
+5. Run the four health-check commands first.
+6. Per branch-per-feature: create `feature-delivery-checklist` before
+   any file changes.
 
 ---
 
@@ -182,13 +183,11 @@ npx jest --ci --passWithNoTests
 npm run build
 ```
 
-All four should exit clean. After build, `public/sitemap.xml` and
-`public/robots.txt` regenerate (gitignored).
+All four should exit clean.
 
 ---
 
-## What's left after Step 21
+## What's left after Step 22
 
-- **Step 22** — `DELIVERY_CHECKLIST.md` at project root. Quick.
-
-Then the speculative build is shippable.
+Nothing. After Step 22 the speculative build is shippable. The pitch
+conversation comes next — that's outside the build scope.
