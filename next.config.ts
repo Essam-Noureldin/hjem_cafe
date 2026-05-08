@@ -22,6 +22,9 @@
  */
 
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
+
+import { getCspReportUrl } from "./lib/sentry";
 
 
 /* ---------------------------------------------------------------------------
@@ -80,6 +83,15 @@ const isDev = process.env.NODE_ENV !== "production";
  */
 const localHttpTest = process.env.LOCAL_HTTP_TEST === "1";
 
+/**
+ * Sentry CSP-violation reporting endpoint, derived from the configured
+ * DSN. `null` whenever no DSN is set (demo build) — in that case the
+ * `report-to` / `report-uri` CSP directives and the `Reporting-Endpoints`
+ * header are omitted entirely. Pointing those at nowhere causes browsers
+ * to log a warning on every page load.
+ */
+const sentryCspReportUrl = getCspReportUrl(process.env.NEXT_PUBLIC_SENTRY_DSN);
+
 const cspDirectives = [
   // Default fallback — block anything we haven't explicitly allowed.
   "default-src 'self'",
@@ -132,14 +144,16 @@ const cspDirectives = [
   // testing of a production build over plain HTTP).
   ...(isDev || localHttpTest ? [] : ["upgrade-insecure-requests"]),
 
-  // TODO (Step 18 — Sentry): add `report-to csp-endpoint` and
-  // `report-uri /api/csp-report` directives once Sentry is wired so
-  // real-world CSP violations (i.e. attempted XSS in production) get
-  // logged centrally instead of failing silently in the browser
-  // console. Sentry has a CSP endpoint that accepts the standard
-  // report payload; the report-to group is configured via the
-  // `Reporting-Endpoints` response header. Out of scope until Step 18
-  // because without a real ingest destination the directive is noise.
+  // CSP violation reporting — only when Sentry DSN is configured.
+  // `report-uri` (legacy, but still the only directive Safari supports)
+  // and `report-to csp-endpoint` (modern, group name resolved via the
+  // `Reporting-Endpoints` HTTP header below) are paired so we get
+  // reports from every browser. With no DSN, both are omitted: a
+  // directive pointing at nowhere causes a console warning on every
+  // page load.
+  ...(sentryCspReportUrl
+    ? [`report-uri ${sentryCspReportUrl}`, "report-to csp-endpoint"]
+    : []),
 ];
 
 const contentSecurityPolicy = cspDirectives.join("; ");
@@ -207,6 +221,18 @@ const securityHeaders = [
     key: "Cross-Origin-Resource-Policy",
     value: "same-origin",
   },
+  // Reporting-Endpoints names the destinations the CSP `report-to`
+  // directive can target. Only present when a Sentry DSN is configured;
+  // otherwise the named "csp-endpoint" group would point at nothing
+  // and browsers would log a console warning on every page load.
+  ...(sentryCspReportUrl
+    ? [
+        {
+          key: "Reporting-Endpoints",
+          value: `csp-endpoint="${sentryCspReportUrl}"`,
+        },
+      ]
+    : []),
 ];
 
 
@@ -236,4 +262,22 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * Wrap the entire config object with Sentry's build-time helper. The
+ * wrap is shape-preserving (`<C>(config: C): C`) — every top-level
+ * field above (output, headers) survives untouched. What it adds is a
+ * Webpack/Turbopack hook that injects Sentry's instrumentation at
+ * build time and uploads source maps when an auth token is configured.
+ *
+ * `silent: true` suppresses the build-log line that would otherwise
+ * say "no SENTRY_AUTH_TOKEN, skipping source map upload" — fine for
+ * a demo build, expected behaviour, just noisy. When Hjem signs and a
+ * real auth token is set, source maps will upload automatically.
+ *
+ * CRITICAL: every security header MUST stay inside `nextConfig` above,
+ * not be added after this wrap. The security-headers integration test
+ * is the regression guard that catches any drift.
+ */
+export default withSentryConfig(nextConfig, {
+  silent: true,
+});

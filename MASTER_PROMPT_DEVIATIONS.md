@@ -888,6 +888,101 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
 
 ---
 
+## Session 9 — 2026-05-08
+
+Step 18 — Sentry scaffold. (Step 19 — security headers integration test —
+folded into the same branch because it doubles as the regression guard
+for the Sentry wrap.)
+
+### 9.1 Sentry config files use the modern Next.js `instrumentation*` convention, not the deprecated `sentry.*.config.ts` filenames
+- **Prompt says:** "Create sentry.client.config.ts and sentry.server.config.ts."
+- **What we did:** created `instrumentation-client.ts` (root) and
+  `instrumentation.ts` (root) instead. Plus `lib/sentry.ts` to hold the
+  init decision logic shared by both glue files.
+- **Why:** Next.js 15.3+ introduced `instrumentation-client.ts` as a
+  blessed file convention with documented timing guarantees (runs
+  after HTML load, before React hydration), and `instrumentation.ts`
+  with a `register()` export has been stable since Next 15.0. The Sentry
+  SDK v8+ targets exactly these files; the older `sentry.client.config.ts`
+  pattern is deprecated and not picked up by Sentry on Next 15+/16. If
+  we'd followed the prompt literally, the file would sit in the repo
+  unused and no client errors would reach Sentry — a "looks fine, secretly
+  broken" outcome.
+- **Prompt update:** in the Error Monitoring (Sentry) section, replace
+  the file names with `instrumentation-client.ts` and `instrumentation.ts`
+  and note that the SDK now uses Next.js's official instrumentation file
+  conventions. Add a one-line callout: "Verify your Sentry SDK major
+  version against your Next.js major version — Sentry's expected entry
+  files have moved between SDK generations."
+
+### 9.2 Init decision logic lives in `lib/sentry.ts`, not in the framework hook files
+- **Prompt says:** the init logic appears inline in `sentry.client.config.ts`
+  and `sentry.server.config.ts`.
+- **What we did:** the instrumentation files are 3-line glue. The decisions
+  (init or skip? what options?) live in `lib/sentry.ts` as pure functions
+  with dependency-injected Sentry. Tests pass a stub `{ init: jest.fn() }`
+  and assert on what it received.
+- **Why:** mixing decisions with framework hooks means every test has to
+  mock the entire `@sentry/nextjs` SDK — slow, brittle, noisy. Separating
+  the two gives one clean unit test for the logic and lets the
+  instrumentation files stay tiny enough not to need their own tests.
+- **Prompt update:** suggest a `lib/sentry.ts` (or similar) for the init
+  logic, with the instrumentation files being thin glue. Sample test
+  shape: stub `Sentry.init`, assert the call (or absence) for missing /
+  whitespace / valid DSN cases.
+
+### 9.3 CSP `report-to` is gated on the DSN being set
+- **Prompt says:** the section on `report-to` (in the Sentry block of
+  `next.config.ts`) is implied — "wire CSP `report-to` to Sentry's CSP
+  endpoint." The previous Step-17 TODO comment in next.config.ts said
+  much the same.
+- **What we did:** the `report-uri`, `report-to`, and `Reporting-Endpoints`
+  pieces are added ONLY when `NEXT_PUBLIC_SENTRY_DSN` is non-empty. With
+  no DSN (current demo state), the CSP carries none of those directives.
+  The Sentry report URL is derived from the DSN itself (`getCspReportUrl`
+  in `lib/sentry.ts`).
+- **Why:** a `report-to` directive that names a group with no destination,
+  or a `report-uri` pointing at nothing, causes a browser console warning
+  on every page load. Better to omit them entirely until a real ingest
+  destination exists.
+- **Prompt update:** explicitly say "CSP report directives must be
+  conditional on the DSN — omitted when not set." Provide the URL
+  derivation snippet (DSN → `https://<host>/api/<id>/security/?sentry_key=<key>`)
+  inline so the implementer doesn't have to fish for it in Sentry's docs.
+
+### 9.4 The `withSentryConfig` wrap is paired with a permanent regression-guard test
+- **Prompt says:** "verify headers are still present after adding the
+  wrapper by re-running the security-headers integration test."
+- **What we did:** wrote `tests/integration/api/security-headers.test.ts`
+  BEFORE the wrap, watched it pass against the un-wrapped config, then
+  wrapped and watched it stay green. The test imports `next.config.ts`
+  directly, calls its `headers()` async function, and asserts on the
+  exact set of headers + key directives. Lives permanently in CI.
+- **Why:** the prompt's "re-run after wrapping" instruction is a one-time
+  manual step; we want the protection forever. If anyone in future
+  refactors next.config.ts and accidentally drops a header, the test
+  fails on the next push.
+- **Prompt update:** move the security-headers test from "Step 19" to
+  "Step 18a — write the security-headers integration test BEFORE the
+  Sentry wrap." Use it as the red/green discipline for the wrap. Then
+  Step 19 can be deleted, since this test already covers it.
+
+### 9.5 Sentry build-plugin runs `silent: true`
+- **Prompt says:** nothing specific about `withSentryConfig`'s build options.
+- **What we did:** passed `{ silent: true }` to `withSentryConfig`. This
+  suppresses the build-time line that would otherwise say "no
+  SENTRY_AUTH_TOKEN provided, skipping source map upload." Once Hjem
+  signs and a real auth token is set, source maps will upload
+  automatically — the demo build just doesn't need the warning.
+- **Why:** without `silent`, the build log gets noisier on every
+  `npm run build`. Source map upload is an opt-in (requires an auth
+  token) so the warning isn't actionable in demo mode.
+- **Prompt update:** add "pass `{ silent: true }` to `withSentryConfig`
+  for demo builds; remove or set to `false` when you're ready to upload
+  source maps and want to see what the plugin is doing."
+
+---
+
 ## How to maintain this file
 
 - Append a new entry under the current Session header whenever you
