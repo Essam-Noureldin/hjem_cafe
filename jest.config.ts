@@ -90,6 +90,7 @@ const config: Config = {
     "components/**/*.{ts,tsx}",
     "lib/**/*.{ts,tsx}",
     "app/api/**/*.{ts,tsx}",
+    "app/actions/**/*.{ts,tsx}",
     "!**/*.d.ts",
     "!**/*.test.{ts,tsx}",
     "!**/index.ts",

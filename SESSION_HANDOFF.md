@@ -1,203 +1,175 @@
 # Session Handoff
-**Generated:** 2026-05-07 (end of Session 7)
+**Generated:** 2026-05-08 (end of Session 8)
 **Project:** Hjem Kensington — speculative demo build (UK indie cafe)
 **Operator:** Essam (solo freelancer)
 
 ---
 
-## What Was Completed in Session 7
+## What Was Completed in Session 8
 
-### Step 16 finished — Visit section shipped, plus Testimonials added
+### Step 17 — Contact form shipped end-to-end
 
-Step 16 (homepage sections) fully complete; Testimonials added on top
-to cover master prompt's "social proof" requirement (#5 in EVERY SITE
-MUST INCLUDE).
+The contact form is the only path by which a stranger's input becomes
+a real-world email. Five defence layers in order: honeypot → rate limit
+→ field validation → HTML sanitisation → email handler. First failure
+short-circuits the rest. Implemented test-first per the master prompt;
+both the unit test (UI) and integration test (server action) were
+written and confirmed red before any implementation code.
 
-#### Visit section
-- **Layout:** two-column on desktop (info left, shopfront image
-  right), stacks on mobile (info on top, image below).
-- **Content (real, from Essam's in-store research):**
-  - Address: 157 Gloucester Road, London, SW7 4TH
-  - Hours: Mon–Fri 7:30–17:00, Sat & Sun 8:30–17:00
-  - Headline: "One room on Gloucester Road."
-  - Subhead: "South Kensington, two minutes from the tube."
-- **CTA:** "Get directions" button links to
-  `https://www.google.com/maps/?q=157+Gloucester+Road+London+SW7+4TH`
-  with `target="_blank"` + `rel="noopener noreferrer"`. Taps
-  straight into the native Maps app on mobile.
-- **Image:** reuses `/public/images/hero-shopfront.jpeg` — appears
-  5+ scroll-lengths after the Hero rotation, so recall is "yes,
-  that place" not repetition.
-- **No iframe:** chose an outbound link over an embedded Google
-  Maps widget. Keeps CSP `frame-src 'none'` intact, avoids loading
-  Google's trackers before consent, no LCP hit. See deviation 7.1.
-- **Phone:** intentionally omitted — Hjem's published number wasn't
-  in research. Same omit-don't-invent rule as deviations 6.4 / 6.6.
+#### Files created
+- `app/actions/contact.ts` — `'use server'` action, exported as
+  `submitContactForm(prevState, formData) -> ContactFormState`. State
+  shape is a discriminated union with `status: 'idle' | 'success' |
+  'error'` and a `code` of `'bot' | 'rate_limit' | 'validation' |
+  'server'` for the error variant.
+- `lib/email.ts` — thin Resend wrapper. Demo mode (no creds) logs the
+  submission to the server console and returns success. Live mode
+  lazy-imports the SDK and calls `resend.emails.send` with from / to /
+  replyTo / subject / text. See deviation 8.2.
+- `components/ContactForm.tsx` — client component using React 19's
+  `useActionState`. Three labelled fields (name / email / message),
+  one hidden honeypot (`name="company_url"`, wrapper `display:none`,
+  `tabIndex=-1`, `aria-hidden`, `autoComplete="off"`). Submit button
+  disables + relabels to "Sending…" while pending. Form resets on
+  success via `formRef.current.reset()`. Field-level errors render
+  inline with `role="alert"` and `aria-describedby` wiring.
+- `components/sections/Contact.tsx` — bg-bone band that hosts the form.
+  Sits below Visit on the homepage. id="contact" but **not** in the
+  navbar (same passive-destination reasoning as Testimonials).
+- `tests/unit/components/ContactForm.test.tsx` — 7 tests covering
+  fields, submit button, honeypot shape, success message, generic
+  error contract, rate-limit message, field-level validation rendering.
+- `tests/unit/components/sections/Contact.test.tsx` — 4 tests pinning
+  the section landmark, single h2, form mount, and intro copy hint.
+- `tests/unit/lib/email.test.ts` — 4 tests covering demo mode (default),
+  whitespace-only env vars treated as missing, live-mode Resend payload
+  shape, and error propagation.
+- `tests/integration/api/contact-form.test.ts` — 10 tests covering
+  honeypot rejection (no email sent), rate-limit at MAX+1, all four
+  validation paths (empty name, empty email, malformed email, empty
+  message, short message), happy path, sanitisation (HTML stripped from
+  name + message), and the no-leak error contract (Resend / api key /
+  stack details never appear in the response body).
+
+#### Files modified
+- `app/page.tsx` — imports `Contact`, places it after `Visit`. Doc
+  comment updated to mention Contact alongside Testimonials as
+  "section ids without nav slots."
+- `jest.config.ts` — `collectCoverageFrom` now includes
+  `app/actions/**/*.{ts,tsx}` so the action counts toward coverage.
+- `jest.setup.ts` — wrapped browser-environment mocks (`matchMedia`,
+  `IntersectionObserver`, `ResizeObserver`) in a
+  `if (typeof window === "undefined") return;` guard so the file
+  no-ops cleanly in node test environments. Without this the very
+  first node-env test crashed inside setup. See deviation 8.1.
+- `MASTER_PROMPT_DEVIATIONS.md` — Session 8 entries 8.1, 8.2, 8.3, 8.4.
+
+#### Workflow
+- Branched `feature-contact-form` from `main`.
+- Test-first: unit + integration tests written and **confirmed red**
+  before any production file existed (red error: `Could not locate
+  module @/app/actions/contact`).
+- Implementation came in three passes: email wrapper, server action,
+  client component + section. Each pass green-confirmed before moving on.
+- `npm install resend` — only one new dep. `npm audit` reports zero
+  new high/critical issues; the pre-existing 2 moderate postcss vulns
+  in Next's bundled deps are unchanged.
 
 #### Workflow followed
-- Branch-per-feature: built on `feature-visit`, fast-forward merged
-  to `main`, both branches pushed to remote.
-- Test-first: `Visit.test.tsx` (7 tests) written and red-confirmed
-  before `Visit.tsx`.
-- `app/page.tsx` updated: imports Visit, removes the `SectionStub`
-  helper (Visit was its only consumer).
+- Branch-per-feature (rule 6.7): all work on `feature-contact-form`,
+  fast-forward merged to `main` once green, both branches pushed.
+- Master prompt feature integration scan: tsc, eslint, full jest suite
+  with coverage, `npm run build` all clean before merge.
 
-### Testimonials section (added after Visit shipped)
+### Key design decisions
 
-#### What
-- 3 real, attributed customer/critic quotes pulled from public
-  review platforms — TripAdvisor (Karen55115 5★ Feb 2025, Mrs Sarah
-  G 5★ Jan 2022) and The Infatuation (Oliver Feldman, Jan 2020).
-- Each card is a `<blockquote>` with `cite=` URL pointing to the
-  source page; visible `<cite>` shows reviewer name, source platform,
-  date, and rating where available. Source name is itself a link.
-- Sits between Menu and Visit so trust is established before the
-  "Get directions" CTA.
-- Three different voices (critic / foodie tourist / local family)
-  across three different time spans — sustained quality, not a
-  cherry-picked moment.
-
-#### Why this approach (not Google scraping, not generated reviews)
-- **No Google scraping:** Google's TOS prohibits it, and reviews
-  are JS-rendered so server-side fetch returns nothing useful
-  anyway. The legitimate Google path is the Places API — costs
-  money, needs CSP relax, overkill for a demo. See deviation 7.2.
-- **No generated reviews:** UK Digital Markets, Competition and
-  Consumers Act 2024 (in force April 2025) makes publishing fake
-  reviews a civil offence with fines up to 10% of global turnover.
-  Same omit-don't-invent rule we apply to menu prices (6.4 / 6.6)
-  and Visit phone number (7.1).
-- Quoting short excerpts of real published reviews with full
-  attribution and source links is standard editorial fair use.
-
-#### Workflow followed
-- Branch-per-feature: built on `feature-testimonials`, fast-forward
-  merged to `main`, both branches pushed.
-- Test-first: `Testimonials.test.tsx` (6 tests, includes a
-  real-source guard that fails if a quote ever ships without a
-  verifiable platform attribution).
-- `app/page.tsx` updated: imports Testimonials, sits between Menu
-  and Visit. Section id="testimonials" but intentionally not in the
-  navbar — passive proof beat, not a destination.
-
-### Testimonials redesign (visual iteration after first ship)
-- Essam pointed at a stock testimonial template (centered cards
-  with profile photos overhanging the top edge) and asked for the
-  Hjem section to match.
-- Built the visual structure faithfully — centered headline +
-  subhead, three centered cards on bg-cream over the bg-bone band,
-  decorative open-quote glyphs, author names in clay accent — but
-  pushed back on lifting reviewer photos. See deviation 7.3.
-- First iteration shipped with **trust-signal badges** in the
-  circles (★★★★★ / Critic's Pick) on `redesign-testimonials-cards`.
-- **Second iteration:** Essam pushed back on no-photos. Negotiated
-  to **stylised watercolour-illustrated avatars** — clearly painted,
-  visible brush texture, plain backgrounds, palette tied to the
-  cream/clay/moss brand. Three avatars generated by Essam in his
-  AI tool from prompts I wrote (one for each testimonial slot),
-  saved as `avatar-feldman.jpeg`, `avatar-karen.jpeg`,
-  `avatar-sarah.jpeg` in `/public/images/testimonials/`. Trust
-  signal moved to a small uppercase clay row directly under each
-  avatar so the conversion cue isn't lost. Each avatar's alt text
-  explicitly says "decorative avatar, not a photograph of the
-  reviewer" — same honesty the visual style gives sighted users.
-  Branched as `feature-testimonials-avatars`, fast-forward merged
-  to main, both branches pushed.
-- **File size note:** the 3 watercolour avatars are 2.6–3.2 MB
-  each (~9 MB total). Next/Image optimises them on serve so first-
-  paint is fine, but the source files are larger than they need to
-  be. Worth a one-time compression pass via squoosh.app before the
-  build is shown to the actual Hjem owners — would shrink to
-  ~200KB each with no visible quality loss.
-
-### Bonus discovery — owner identity confirmed
-- Same web research that surfaced the testimonial quotes also
-  confirmed Hjem's owner: **Marianne Brammer**, Danish-born, opened
-  Hjem in **January 2018**. Original location 3 Launceston Place,
-  expanded to 157 Gloucester Road. The cardamom bun recipe is hers.
-- This resolves the open question from deviation 6.5 (Story uses
-  generic "we" framing because owner was unknown).
-- **Queued as separate branch** `feature-story-owner-update` —
-  kept out of the testimonials branch to honour scope discipline
-  per branch-per-feature rule (6.7). Should be a small focused
-  rewrite of Story's prose to name Marianne and the 2018 founding
-  date.
+- **Server Action, not API route.** The contact form is a Server
+  Action at `app/actions/contact.ts`, not a `/api/contact` route. App
+  Router's `useActionState` + `<form action={...}>` pattern is the
+  modern path; an API route would force JSON parsing, status code
+  juggling, and a separate fetch on the client. See deviation 8.3.
+- **Honeypot field name `company_url`.** Plausible-looking field a
+  bot's auto-filler will populate, invisible to humans (wrapper has
+  inline `display:none`).
+- **Bot rejection: distinct on the wire, generic in the UI.** Action
+  returns `{ status: "error", code: "bot" }` (testable). Component
+  renders the same generic "something went wrong" string for both
+  `code: "bot"` and `code: "server"` — bots inspecting the HTML can't
+  tell which defence rejected them. See deviation 8.4.
+- **Demo mode by default.** With `RESEND_API_KEY` and
+  `CONTACT_FORM_FROM_EMAIL` empty (current `.env.local` state), the
+  form is fully working — validates, sanitises, rate-limits, logs the
+  would-be email server-side — but no real Resend traffic happens. As
+  soon as both env vars are set, real delivery activates with no code
+  change. See deviation 8.2.
+- **Rate-limit identifier is hashed.** SHA-256 first 32 chars of
+  `x-forwarded-for` (Vercel sets this). Raw IPs never sit in process
+  memory — small privacy win at zero cost.
+- **Validation thresholds.** Name 1–200 chars; email RFC-pragmatic
+  regex + 254 max; message 10–5000 chars. Errors are friendly per
+  field, not generic.
 
 ---
 
 ## Current Build Step
 
-**Steps 1–16 of the master prompt's build order are COMPLETE.**
-Plus Testimonials (the master-prompt #5 social-proof requirement)
-shipped on top.
+**Steps 1–17 of the master prompt's build order are COMPLETE.**
 
-**Next session (Session 8):** Step 17 — contact form.
-(Story owner update was knocked out at the end of Session 7 —
-already on main.)
+**Next session (Session 9):** Step 18 — Sentry scaffold.
 
-> ð¡ **Recommended:** run `/compact` at the start of Session 8.
+> 💡 **Recommended:** run `/compact` at the start of Session 9.
 
-> â ï¸ **Open questions for Session 8 (Contact form):**
-> - Form fields: master prompt baseline is name / email / message.
->   Hjem-specific extras (occasion, party size, allergens) — worth
->   asking Essam if the form should serve a wholesale/event enquiry
->   use case as well as walk-in feedback.
-> - Per master prompt: write `ContactForm.test.tsx` AND
->   `tests/integration/api/contact-form.test.ts` BEFORE the
->   implementation. Both must cover honeypot, rate limit,
->   sanitization, validation, error shape.
-> - Resend integration: needs `RESEND_API_KEY`,
->   `CONTACT_FORM_FROM_EMAIL`, `CONTACT_FORM_TO_EMAIL` set in
->   `.env.local` AND on Vercel before deploy. `lib/env.ts` will
->   throw at startup if missing — confirm Essam has a Resend
->   account first.
+> ⚠️ **Open questions for Session 9 (Sentry):**
+> - Sentry DSN: per `.env.example`, `NEXT_PUBLIC_SENTRY_DSN` is
+>   intentionally optional (`/lib/env.ts` treats it as a soft dep).
+>   For the demo we can wire the scaffold and leave the DSN empty —
+>   `withSentryConfig` no-ops with no DSN, `Sentry.init` short-circuits.
+>   Real DSN goes in `.env.local` and Vercel once Hjem signs.
+> - **Critical:** the security headers in `next.config.ts` MUST stay
+>   inside the object passed to `withSentryConfig`. Wrapping a
+>   pre-exported config silently drops the headers. Re-run the
+>   security-headers integration test (Step 19) after wrapping.
+> - CSP `report-to` directive — TODO comment is already in
+>   `next.config.ts`, wire it to Sentry's CSP endpoint here.
 
-After Step 17:
-- Step 18: Sentry scaffold (security headers must remain inside
-  `withSentryConfig` wrapper)
-- Step 19: Security headers integration test
+After Step 18:
+- Step 19: Security headers integration test (supertest, node env)
 - Step 20: Smoke tests + final coverage gate
-- Step 21: All 15 docs in `/docs/` (CLAUDE.md, README.md,
-  ARCHITECTURE.md, etc.)
+- Step 21: All 15 docs in `/docs/`
 - Step 22: DELIVERY_CHECKLIST.md
 
 ---
 
-## Decisions Made in Session 7
+## Decisions Made in Session 8
 
 | Decision | Reasoning | Alternatives rejected |
 |---|---|---|
-| Outbound Google Maps directions link, no iframe | Keeps strict CSP (`frame-src 'none'`) intact, no third-party trackers before consent, no LCP hit, taps into native Maps app on mobile | Embedded Google Maps iframe (would force CSP relax + load Google trackers regardless of consent state); static map image (extra asset to commission, no real benefit over a link for this use case) |
-| Reuse `hero-shopfront.jpeg` for Visit image | Already in repo, perfect "find us" framing, appears 5+ scrolls after Hero so it reads as recall not repeat | Generate a new dedicated Visit image (extra Essam effort for marginal gain — can swap later if a better shot emerges) |
-| Two-column desktop, info-on-top mobile stack | Info-density side reads first when the layout collapses — visitor sees address/hours/CTA before scrolling past the image | Image-on-top mobile (visitor scrolls past the photo before getting to the actionable info) |
-| Phone number omitted | Not in Essam's research; omit beats invent (same rule as deviations 6.4 / 6.6) | Invent a placeholder number (lies on a demo site, deletes trust if Essam shows it to the real Hjem owners) |
-| Hours rendered as `<dl>` with weekday `<dt>` / time `<dd>` | Correct semantic for label:value pairs; screen readers announce as a definition list | Plain divs (loses the semantic relationship for a11y) |
-| Testimonials use real quoted reviews from public platforms (TripAdvisor, The Infatuation) | Editorial fair use is the legitimate path; UK DMCC Act 2024 makes fake reviews a 10%-of-turnover offence; Google scraping is TOS-prohibited and Google reviews are JS-rendered anyway | Generated/invented "plausible" reviews (illegal); Google reviews scrape (TOS + technical); Google Places API embed (overkill — money + CSP relax + caching infra for a demo) |
-| Testimonials sits between Menu and Visit (not in navbar) | Trust is established immediately before the "Get directions" CTA; passive proof beat doesn't earn a navbar slot | Above Menu (proof before menu interest is unmotivated); below Visit (too late — visitor has already decided whether to come); add to navbar (clutter for a one-page brochure) |
-| Three voices on purpose (critic / tourist / family, 2020/2022/2025) | Different angles + different time spans demonstrate sustained quality, not a cherry-picked moment | Three quotes from one platform / one period (looks suspicious); single hero quote (single voice carries less weight than three corroborating ones) |
-| Testimonials.tsx coverage 100%, 6 tests including real-source guard | Catches a future regression where someone quietly ships an unattributed or invented quote | Skip the source-name regex (test passes for any text in `<cite>`, no protection against future drift) |
+| Server Action (not API route) for the form | App Router idiomatic, useActionState gives `pending` for free, no JSON-parsing ceremony | `app/api/contact/route.ts` with POST handler — extra ceremony for a problem React already solves |
+| Resend wrapped in `lib/email.ts` instead of inlined in the action | One-line mock in tests; demo-mode fallback (logs to console when creds absent); lazy SDK import keeps cold-start cheap | Inline Resend in action — every test would have to mock the SDK shape; no clean demo-mode path |
+| Honeypot field name `company_url` | Plausible to a bot's autofiller, invisible to a human | `phone`, `website` (real users sometimes hit autofill on these) |
+| Wrapper carries `display:none`, not the input | Hides the entire field including any decorative label from screen readers and bots | `visibility: hidden` (some bots check visibility and skip) |
+| Bot error code distinct on the wire, generic in UI | Test can assert the rejection happened; bots can't probe to learn the form has a honeypot | Single shared error (untestable); separate UI string (teaches bots) |
+| Hashed identifier for rate-limit (SHA-256, first 32 chars) | Privacy: never store raw IP in process memory; collision risk negligible at our traffic | Raw IP (privacy regression); session-based id (breaks for cookieless visitors) |
+| Validation thresholds: msg 10–5000, name ≤200, email ≤254 | Min 10 stops "test" submissions; max 5000 cuts the spam-payload tail; email max is RFC 5321 | No max bounds (denial-of-service via huge payloads); shorter min (test submissions slip through) |
+| Friendly per-field error messages | Helps a real human fix one field at a time; doesn't leak internals | Single "invalid form" message (frustrating UX); raw Zod-style errors (leaks shape) |
+| Contact section sits below Visit, not in navbar | Same passive-destination reasoning as Testimonials — closes the scroll, doesn't earn a primary nav slot | In navbar (clutters the brochure); above Visit (visitor hasn't seen address yet) |
+| `jest.setup.ts` guards browser mocks for node env | Without the guard, the first node-env test crashes inside setup before any test runs | Per-file inline mocks (every node test has to repeat the dance) |
 
 ---
 
 ## Known Issues or Open Questions
 
-### Resolved during Session 7
-- â `SectionStub` helper deleted from `app/page.tsx` — Visit was
-  its only consumer.
-- â All Step-16 sub-sections now ship in their final form: Hero,
-  Story, Today's Bench, Menu, Visit.
-- â Master prompt's #5 (social proof) requirement now covered by
-  the Testimonials section between Menu and Visit.
-- â Hjem owner identity confirmed: **Marianne Brammer**, Danish-
-  born, opened Jan 2018. Cardamom bun recipe is hers. (Story copy
-  rewrite queued as separate `feature-story-owner-update` branch.)
-- â Security audit done end-to-end (deviation 7.4). Code-side
-  hardening added: COOP, CORP, browsing-topics opt-out. CSP
-  `report-to` deferred to Step 18. Environment-side gaps (DNS,
-  GitHub repo settings) documented in the new "Manual security
-  actions outside the repo" section above.
+### Resolved during Session 8
+- ✅ Step 17 fully shipped: form, action, email wrapper, section,
+  unit tests, integration tests, coverage above gates.
+- ✅ Demo-mode email path: form works end-to-end with no Resend
+  credentials. Submissions log to the server console. Real delivery
+  flips on the moment both env vars are set.
+- ✅ `jest.setup.ts` env-aware: works in both jsdom and node test
+  environments without per-file shims.
+- ✅ Coverage config now counts `app/actions/`.
 
-### Carried over from Session 6 (still open)
+### Carried over from Session 7 (still open)
 - **Drinks menu unknown.** Counter menu Essam photographed is
   bakery-only. When the drinks list surfaces, add a Drinks card
   back to the Menu carousel using the unused `coffee.jpeg` and
@@ -207,33 +179,37 @@ After Step 17:
   prompt gate is high+ only. Add to ERRORS.md in Step 21.
 - **No CLAUDE.md or ERRORS.md yet** — generation scheduled for
   Step 21. Root `CLAUDE.md` is still just `@AGENTS.md` import.
-- ~~Story copy uses generic "we" framing~~ — **resolved Session 7**
-  on `feature-story-owner-update`. Story now names Marianne
-  Brammer, the 2018 founding date, and identifies Gloucester Road
-  as the second room. Deviation 6.5 closed.
 - **Hjem phone number** — left out of Visit per deviation 7.1.
   Add when published.
 - **CookieConsent / GAScript SSR-only branches**
   (`getServerSnapshot`) intentionally uncovered. Suite well above
   gates.
+- **Avatar file size compression** (~9MB → ~600KB via squoosh.app)
+  — flagged but not blocking.
 - **Sitemap regeneration** — use `npm run build` (not `npx next
   build`) to fire `postbuild`. If stale, run `npx next-sitemap`
   directly.
-- **Standalone production server testing on phone:** copy
-  `public/` and `.next/static/` into `.next/standalone/` after
-  build, then `node .next/standalone/server.js` with
-  `LOCAL_HTTP_TEST=1` and `HOSTNAME=0.0.0.0`. See deviation entry
-  for the LOCAL_HTTP_TEST var.
+- **Standalone production server testing on phone:** see Session 7
+  notes for the `LOCAL_HTTP_TEST=1` workflow.
+
+### New for Session 9
+- **Resend domain not yet verified.** When Hjem ship a real sender
+  domain, set `RESEND_API_KEY` + `CONTACT_FORM_FROM_EMAIL` in
+  `.env.local` AND on Vercel. The form transitions from logging to
+  sending automatically — no code change.
+- **CSP `report-to`** still a TODO in `next.config.ts`. Wire to
+  Sentry's CSP endpoint as part of Step 18.
 
 ---
 
 ## Test Status
 
-- **150 tests passing** across 16 suites (137 → 150, +13 from Session 7)
+- **175 tests passing** across 20 suites (150 → 175, +25 from Session 8)
   - env.test.ts: 18
   - sanitize.test.ts: 16
   - rate-limit.test.ts: 10
   - honeypot.test.ts: 8
+  - **email.test.ts: 4** *(new in Session 8)*
   - legal-pages.test.tsx: 13
   - CookieConsent.test.tsx: 13
   - cookie-consent-ga.test.tsx: 6
@@ -244,71 +220,66 @@ After Step 17:
   - Menu.test.tsx: 6
   - TodaysBench.test.tsx: 5
   - Carousel.test.tsx: 19
-  - **Visit.test.tsx: 7** *(new in Session 7)*
-  - **Testimonials.test.tsx: 6** *(new in Session 7)*
-- Coverage: **93.77% statements, 93.10% branches, 88.05% functions, 95.23% lines**
-  - Visit.tsx: **100% on every metric**
-  - Testimonials.tsx: **100% on every metric**
-  - All sections at 100% on every metric except Hero (85.71% statements, 91.66% lines — slide-event handlers not exercised by jsdom)
-  - Carousel.tsx: 86.36% statements, 91.83% branches (uncovered: edge-cycling fallbacks that embla doesn't fire in jsdom)
-  - sanitize.ts, rate-limit.ts, honeypot.ts: 100% on every metric
-  - DemoDisclaimer.tsx, LegalLayout.tsx, Footer.tsx, Navbar.tsx: 100%
-  - CookieConsent.tsx: 95% statements (line 61 = `getServerSnapshot`, SSR-only)
-  - GAScript.tsx: 95% statements (line 59 = `getServerSnapshot`, SSR-only)
-  - env.ts: 94.73% statements (intentional uncovered branch)
-- Last full suite run: **PASSED** (6.405s)
+  - Visit.test.tsx: 7
+  - Testimonials.test.tsx: 6
+  - **Contact.test.tsx: 4** *(new in Session 8)*
+  - **ContactForm.test.tsx: 7** *(new in Session 8)*
+  - **contact-form.test.ts (integration): 10** *(new in Session 8)*
+- Coverage: **94.49% statements, 89.15% branches, 89.61% functions, 96.18% lines**
+  - All thresholds met (gate is 80%).
+  - ContactForm.tsx: 100% / 87.09% / 100% / 100%
+  - Contact.tsx: 100% on every metric
+  - email.ts: 100% on every metric
+  - contact.ts (action): 93.22% / 77.14% / 100% / 96.49% (uncovered: edge fallbacks for `getRateLimitIdentifier` when neither x-forwarded-for nor x-real-ip is present)
+  - All section components still 100% on every metric
+  - Carousel, env, GAScript, CookieConsent unchanged from Session 7
+- Last full suite run: **PASSED** (13.244s)
 - Last `next build`: **PASSED** (sitemap regenerated, zero errors)
 
-### Tests still to write (next sessions, in build order)
-1. `tests/unit/components/ContactForm.test.tsx` (Step 17)
-2. `tests/integration/api/contact-form.test.ts` (Step 17)
-3. `tests/integration/api/security-headers.test.ts` (Step 19)
-4. `tests/smoke/render.test.tsx` (Step 20)
-5. `tests/smoke/navigation.test.tsx` (Step 20)
-6. `tests/smoke/accessibility.test.tsx` (Step 20)
+### Tests still to write (next sessions)
+1. `tests/integration/api/security-headers.test.ts` (Step 19)
+2. `tests/smoke/render.test.tsx` (Step 20)
+3. `tests/smoke/navigation.test.tsx` (Step 20)
+4. `tests/smoke/accessibility.test.tsx` (Step 20)
 
 ---
 
 ## Manual security actions outside the repo
+*(Unchanged from Session 7 — no new manual actions in Session 8.)*
 
-Application-layer security is solid (deviation 7.4 audit). What
-remains is **outside-the-app surface** that no amount of code can
-fix. None of these are blocking — but they all take ~30 minutes
-total to knock out and significantly raise the effective security
-posture beyond what application code alone can.
+Same three-table breakdown as before: Now (GitHub branch protection,
+push protection, Dependabot — all done), When the real Hjem domain is
+wired (CAA, SPF, DKIM, DMARC), Step 18 (CSP `report-to` via Sentry).
 
-### Now (free, ~5 min total — do before any production deploy)
+---
 
-| Action | Where | Why | Time |
-|---|---|---|---|
-| Enable **branch protection** on `main` | github.com → repo → Settings → Branches | Forces PR review + status checks before merge. Right now any push goes straight to main. | 1 min |
-| Enable **push protection** for secret scanning | github.com → repo → Settings → Code security | Auto-blocks commits containing detected secrets (Resend keys, etc.) at push time. | 30 sec |
-| Enable **Dependabot security alerts** + version updates | github.com → repo → Settings → Code security | Auto-PRs for vulnerable deps. The safety net `npm audit` is too manual to be. | 30 sec |
-| (Optional) Enable **required signed commits** | github.com → repo → Settings → Branches → branch protection rule | Requires GPG/SSH-signed commits — proves a commit really came from you. Worth it on shared repos; overkill on solo. | 2 min |
+## Resend operational note (NEW)
 
-### When the real Hjem domain is wired (DNS panel work)
+Right now the form is in **demo mode**: every submission logs to the
+server console with the `[contact-form demo]` prefix and returns success
+to the user. No real email goes anywhere. This is the correct state
+for a speculative build — Hjem haven't signed off on a sender domain.
 
-| Action | What it stops | Time |
-|---|---|---|
-| **CAA record** pinning Let's Encrypt (or whoever issues your cert) | Any compromised CA from issuing a valid cert for hjemkensington.com and MITM-ing your visitors | 2 min, one-time |
-| **SPF record** pointing to Resend | Your form replies landing in spam | 2 min (Resend gives you the exact record) |
-| **DKIM verification** | Same | 2 min (Resend gives you the exact records — usually three CNAMEs) |
-| **DMARC policy** at minimum `p=quarantine` (eventually `p=reject`) | Anyone spoofing the hjemkensington.com domain to phish your customers | 5 min |
-| (Optional) Subscribe to DMARC aggregate reports via dmarcian.com or similar | Visibility into who's trying to spoof your domain | 5 min, free tier |
+When ready to flip to live email:
 
-### Step 18 (Sentry — already on the roadmap)
+1. Sign up at [resend.com](https://resend.com) (free tier covers our
+   needs; 100 emails/day, 3,000/month).
+2. Add and verify the sender domain (DNS records — Resend gives you
+   the exact list; usually one TXT for SPF and three CNAMEs for DKIM).
+3. Generate a sending-only scoped API key in the Resend dashboard.
+4. Set in `.env.local`:
+   ```
+   RESEND_API_KEY=re_xxx_yourkeyhere
+   CONTACT_FORM_FROM_EMAIL=hello@yourverifieddomain.com
+   ```
+5. Set the same two vars in the Vercel project dashboard (Production
+   + Preview environments).
+6. Submit a test message from `localhost:3000/#contact` — should arrive
+   in the `CONTACT_FORM_TO_EMAIL` inbox within seconds.
 
-| Action | Why | Status |
-|---|---|---|
-| Wire CSP `report-to` to Sentry's CSP endpoint | Real-world attempted XSS in production gets logged centrally instead of failing silently in the browser console | TODO comment already in `next.config.ts` — implement when wiring Sentry |
-| Add `Reporting-Endpoints` response header | Required pair for the modern `report-to` directive | Same as above |
-
-### Step 22 (delivery checklist)
-
-| Action | Why |
-|---|---|
-| Add a "DNS hardening" sub-section to `DELIVERY_CHECKLIST.md` covering CAA / DMARC / SPF / DKIM | So future projects don't miss it |
-| Add a "GitHub repo hardening" sub-section covering branch protection / push protection / Dependabot | Same |
+The action will detect the creds via `lib/email.ts`'s `isDemoMode()`
+check and switch to real delivery automatically. No code change, no
+deploy needed beyond setting the Vercel env vars.
 
 ---
 
@@ -317,9 +288,9 @@ posture beyond what application code alone can.
 1. Open Claude Code in `c:\Users\noure\Desktop\apps_websites\websites\` (the parent — `git -C hjem-kensington` works for git commands).
 2. Paste **MASTER_PROMPT.md** at session start.
 3. Paste **this SESSION_HANDOFF.md**.
-4. State: *"Resuming Hjem Kensington build from Step 17 — Contact form."*
-5. Claude should run the four health-check commands, confirm clean state, then present a Session 8 plan covering the Contact form (form component + server action + Resend wiring + tests) before writing code.
-6. Per the branch-per-feature rule, the first move is to create a branch — name it `feature-contact-form` before any code changes.
+4. State: *"Resuming Hjem Kensington build from Step 18 — Sentry scaffold."*
+5. Claude should run the four health-check commands, confirm clean state, then present a Session 9 plan covering Sentry (client + server config + withSentryConfig wrapper + CSP report-to wiring) before writing code.
+6. Per the branch-per-feature rule, the first move is to create a branch — name it `feature-sentry-scaffold` before any code changes.
 
 ---
 
@@ -334,6 +305,8 @@ posture beyond what application code alone can.
   `Overhead pastry close-up.jpeg`,
   `interior atmosphere.jpeg` — also unreferenced (intermediate
   AI-generation artefacts). Same: safe to delete or leave.
+- `public/images/testimonials/avatar-*.jpeg` — 2.6–3.2MB each. Worth
+  a one-time squoosh.app pass before showing the build to Hjem.
 
 ---
 

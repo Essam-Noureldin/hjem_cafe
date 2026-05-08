@@ -24,6 +24,22 @@ import "@testing-library/jest-dom";
 
 
 /**
+ * Skip browser-environment mocks when running in the node test
+ * environment. Server-only tests (server actions, security headers)
+ * declare `@jest-environment node` at the top of the file — there's
+ * no `window` to mutate, and trying to throws.
+ *
+ * The unconditional jest-dom import above is fine in either environment
+ * (it's a pure JS module that just registers matchers).
+ */
+if (typeof window === "undefined") {
+  // No-op in node env — return early before the window mocks.
+} else {
+  setupBrowserMocks();
+}
+
+function setupBrowserMocks() {
+/**
  * Mock window.matchMedia
  *
  * jsdom (the fake browser Jest uses) doesn't implement window.matchMedia.
@@ -94,3 +110,4 @@ Object.defineProperty(window, "ResizeObserver", {
   configurable: true,
   value: MockResizeObserver,
 });
+}

@@ -803,6 +803,91 @@ Each entry: **what the prompt says** → **what we actually did** → **why** �
 
 ---
 
+## Session 8 — Contact form (Step 17)
+
+### 8.1 jest.setup.ts had to be guarded for the node test environment
+- **Prompt says:** "Add @jest-environment node docblock at the top of
+  the test file" for server-only tests (security-headers, server actions).
+- **What we did:** added a `typeof window === "undefined"` guard around
+  every `Object.defineProperty(window, …)` mock in `jest.setup.ts`. Without
+  it, the very first node-env integration test (`contact-form.test.ts`)
+  crashed inside the setup file with `ReferenceError: window is not
+  defined` before any of its tests ran.
+- **Why:** the master prompt assumes the docblock is enough to switch
+  environments, but `setupFilesAfterEach` runs in WHICHEVER environment
+  the test declared — there is no per-environment setup channel in Jest.
+  The setup file therefore has to be environment-aware itself.
+- **Prompt update:** in the testing setup section, add a note that any
+  browser-only mocks in `jest.setup.ts` must be guarded with
+  `if (typeof window === "undefined") return;` (or equivalent) so they
+  no-op in node tests. Worth a one-line example.
+
+### 8.2 Resend wrapped in `lib/email.ts` with a demo-mode fallback
+- **Prompt says:** "Implementation in the contact form server action: …
+  `const resend = new Resend(process.env.RESEND_API_KEY); await
+  resend.emails.send({…})`" — i.e. instantiate Resend inside the action.
+- **What we did:** all Resend usage lives in `lib/email.ts`, exported as
+  `sendContactEmail(payload)`. The action imports that wrapper. When
+  `RESEND_API_KEY` and `CONTACT_FORM_FROM_EMAIL` are both empty (the
+  default for this speculative build), the wrapper logs the submission
+  to the server console and returns success — no Resend call, no boot
+  cost, no error. Live mode activates the moment both env vars are set.
+- **Why:** three reasons.
+  1. **Mockability** — `jest.mock("@/lib/email")` is one line; mocking
+     the Resend SDK shape inside the action would force every test to
+     know Resend's API surface.
+  2. **Demo mode** — Hjem haven't signed off on a verified sender domain
+     yet. The form is fully working end-to-end (validates, sanitises,
+     rate-limits, logs the would-be email) so the demo is real, but no
+     real Resend traffic happens until creds land.
+  3. **Cold-start cost** — `Resend` is `await import`-ed lazily inside
+     the wrapper so demo-mode bundles don't load the SDK at all.
+- **Prompt update:** keep the Resend code block but introduce it as
+  "wrap Resend in `lib/email.ts` and call the wrapper from the action;
+  this isolates the SDK and makes both mocking and demo-mode trivial."
+  Show the demo-mode fallback as the recommended pattern for speculative
+  builds where the client hasn't approved a sender domain yet.
+
+### 8.3 Server action lives in `app/actions/contact.ts` — coverage config needs to follow
+- **Prompt says:** test files are listed under `tests/integration/api/`,
+  implying API routes under `app/api/`. The coverage spec says
+  `collectCoverageFrom: components/**, lib/**, app/api/**`.
+- **What we did:** the contact form is a Server Action (the modern
+  App Router pattern), not an API route. It lives at
+  `app/actions/contact.ts`. We extended `jest.config.ts`
+  `collectCoverageFrom` to include `app/actions/**/*.{ts,tsx}` so
+  coverage actually counts the action.
+- **Why:** Server Actions ARE the recommended path for form
+  submissions in App Router (Next docs `01-app/01-getting-started/
+  07-mutating-data.md`). API routes are still valid but bring extra
+  ceremony (HTTP method handling, JSON parsing, status codes) for a
+  problem React's `useActionState` solves directly.
+- **Prompt update:** rename "API route" terminology to "API route or
+  Server Action" throughout, and add `app/actions/**/*.{ts,tsx}` to
+  the suggested `collectCoverageFrom`. Mention the test file convention
+  `tests/integration/actions/` as a parallel to `tests/integration/api/`
+  (or unify both under `tests/integration/server/`).
+
+### 8.4 Honeypot rejection returns an explicit error code, but the UI shows the same generic message as a server error
+- **Prompt says:** two things that pull in opposite directions:
+  - "Returns 400 if honeypot field is filled (bot detected)"
+  - "We return 200 so bots don't know they were caught"
+- **What we did:** the action returns `{ status: "error", code: "bot" }`
+  (testable, distinct), but the ContactForm component renders **the same
+  generic "something went wrong, try emailing us" string for both
+  `code: "bot"` and `code: "server"`** — a bot inspecting the rendered
+  HTML can't tell which defence rejected it. Tests assert both: the
+  integration test checks the `code === "bot"`, the unit test checks
+  the user-facing string is generic.
+- **Why:** the prompt's two requirements are reconcilable only by
+  separating the wire-format from the UI mapping. Distinguishable on
+  the wire = testable; indistinguishable in the UI = silent rejection.
+- **Prompt update:** clarify the honeypot section to "the action returns
+  a distinct `bot` code so tests can assert it; the UI MUST map `bot` and
+  `server` errors to the same user-facing message so bots can't probe."
+
+---
+
 ## How to maintain this file
 
 - Append a new entry under the current Session header whenever you
